@@ -29,7 +29,7 @@ aiohttp = ">=3.0.0"
 awesomeversion = ">=21.10.1"
 backoff = ">=1.9.0"
 pydantic = "^1.9.0"
-python = "^3.8"
+python = "^3.9"
 yarl = ">=1.6.0"
 
 [tool.poetry.dev-dependencies]

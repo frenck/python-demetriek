@@ -1,0 +1,16 @@
+{
+  "success": {
+    "data": {
+      "volume": 99,
+      "volume_limit": {
+        "max": 100,
+        "min": 0
+      },
+      "volume_range": {
+        "max": 100,
+        "min": 0
+      }
+    },
+    "path": "/api/v2/device/audio"
+  }
+}

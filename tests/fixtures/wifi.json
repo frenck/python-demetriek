@@ -1,0 +1,11 @@
+{
+  "active": true,
+  "available": true,
+  "encryption": "WPA",
+  "ipv4": "192.168.1.2",
+  "mac": "AA:BB:CC:DD:EE:FF",
+  "mode": "dhcp",
+  "netmask": "255.255.255.0",
+  "signal_strength": 42,
+  "ssid": "AllYourBaseAreBelongToUs"
+}

@@ -1,0 +1,11 @@
+{
+  "volume": 50,
+  "volume_limit": {
+    "max": 100,
+    "min": 0
+  },
+  "volume_range": {
+    "max": 100,
+    "min": 0
+  }
+}

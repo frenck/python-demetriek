@@ -1,0 +1,68 @@
+"""Asynchronous Python client for LaMetric TIME devices."""
+# pylint: disable=protected-access
+import aiohttp
+import pytest
+from aresponses import Response, ResponsesMockServer
+
+from demetriek import LaMetricDevice
+from demetriek.const import BrightnessMode, DisplayType
+
+from . import load_fixture
+
+
+@pytest.mark.asyncio
+async def test_get_display(aresponses: ResponsesMockServer) -> None:
+    """Test getting display information."""
+    aresponses.add(
+        "127.0.0.2:4343",
+        "/api/v2/device/display",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("display.json"),
+        ),
+    )
+    async with aiohttp.ClientSession() as session:
+        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
+        display = await demetriek.display()
+
+    assert display
+    assert display.brightness == 100
+    assert display.brightness_mode is BrightnessMode.AUTO
+    assert display.width == 37
+    assert display.height == 8
+    assert display.display_type is DisplayType.MIXED
+
+
+@pytest.mark.asyncio
+async def test_set_display(aresponses: ResponsesMockServer) -> None:
+    """Test setting display properties."""
+
+    async def response_handler(request: aiohttp.ClientResponse) -> Response:
+        """Response handler for this test."""
+        data = await request.json()
+        assert data == {
+            "brightness": 99,
+            "brightness_mode": "manual",
+        }
+        return aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("display_set.json"),
+        )
+
+    aresponses.add("127.0.0.2:4343", "/api/v2/device/display", "PUT", response_handler)
+
+    async with aiohttp.ClientSession() as session:
+        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
+        display = await demetriek.display(
+            brightness=99, brightness_mode=BrightnessMode.MANUAL
+        )
+
+    assert display
+    assert display.brightness == 99
+    assert display.brightness_mode is BrightnessMode.MANUAL
+    assert display.width == 37
+    assert display.height == 8
+    assert display.display_type is DisplayType.MIXED

@@ -38,7 +38,6 @@ async def test_get_bluetooth(aresponses: ResponsesMockServer) -> None:
 @pytest.mark.asyncio
 async def test_set_audio(aresponses: ResponsesMockServer) -> None:
     """Test setting display properties."""
-
     async def response_handler(request: aiohttp.ClientResponse) -> Response:
         """Response handler for this test."""
         data = await request.json()

@@ -68,7 +68,6 @@ async def test_post_request(aresponses: ResponsesMockServer) -> None:
 @pytest.mark.asyncio
 async def test_backoff(aresponses: ResponsesMockServer) -> None:
     """Test requests are handled with retries."""
-
     async def response_handler(_: aiohttp.ClientResponse) -> Response:
         await asyncio.sleep(0.2)
         return aresponses.Response(body="Goodmorning!")

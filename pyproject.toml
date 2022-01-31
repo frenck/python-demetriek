@@ -33,7 +33,7 @@ python = "^3.9"
 yarl = ">=1.6.0"
 
 [tool.poetry.dev-dependencies]
-aresponses = "^2.1.4"
+aresponses = "^2.1.5"
 bandit = "^1.7.2"
 black = "^21.12b0"
 blacken-docs = "^1.12.0"

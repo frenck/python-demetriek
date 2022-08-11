@@ -180,7 +180,7 @@ SOFTWARE.
 [build]: https://github.com/frenck/python-demetriek/actions/workflows/tests.yaml
 [code-quality-shield]: https://img.shields.io/lgtm/grade/python/g/frenck/python-demetriek.svg?logo=lgtm&logoWidth=18
 [code-quality]: https://lgtm.com/projects/g/frenck/python-demetriek/context:python
-[codecov-shield]: https://codecov.io/gh/frenck/python-demetriek/branch/master/graph/badge.svg
+[codecov-shield]: https://codecov.io/gh/frenck/python-demetriek/branch/main/graph/badge.svg
 [codecov]: https://codecov.io/gh/frenck/python-demetriek
 [contributors]: https://github.com/frenck/python-demetriek/graphs/contributors
 [frenck]: https://github.com/frenck

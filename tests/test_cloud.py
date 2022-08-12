@@ -193,7 +193,7 @@ async def test_get_devices(aresponses: ResponsesMockServer) -> None:
     """Test getting devices from the logged in account."""
     aresponses.add(
         "developer.lametric.com",
-        "/api/v2/me/devices",
+        "/api/v2/users/me/devices",
         "GET",
         aresponses.Response(
             status=200,
@@ -249,7 +249,7 @@ async def test_get_device(aresponses: ResponsesMockServer) -> None:
     """Test getting a specific device from the logged in account."""
     aresponses.add(
         "developer.lametric.com",
-        "/api/v2/me/devices/42",
+        "/api/v2/users/me/devices/42",
         "GET",
         aresponses.Response(
             status=200,

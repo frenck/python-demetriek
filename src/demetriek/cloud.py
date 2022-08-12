@@ -107,7 +107,7 @@ class LaMetricCloud:
         Returns:
             A list of CloudDevices.
         """
-        response = await self._request("/api/v2/me/devices")
+        response = await self._request("/api/v2/users/me/devices")
         return parse_obj_as(list[CloudDevice], response)
 
     async def device(self, device_id: int) -> CloudDevice:
@@ -119,7 +119,7 @@ class LaMetricCloud:
         Returns:
             A CloudDevice object, with information about the request device.
         """
-        response = await self._request(f"/api/v2/me/devices/{device_id}")
+        response = await self._request(f"/api/v2/users/me/devices/{device_id}")
         return CloudDevice.parse_obj(response)
 
     async def close(self) -> None:

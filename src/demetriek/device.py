@@ -82,7 +82,6 @@ class LaMetricDevice:
                     ssl=False,
                 )
 
-            print(await response.text())
             content_type = response.headers.get("Content-Type", "")
             if "application/json" not in content_type:
                 raise LaMetricError(response.status, {"message": await response.text()})
@@ -231,12 +230,6 @@ class LaMetricDevice:
         Returns:
             The ID of the notification.
         """
-        print(
-            notification.dict(
-                by_alias=True,
-                exclude_none=True,
-            )
-        )
         response = await self._request(
             "/api/v2/device/notifications",
             method=hdrs.METH_POST,

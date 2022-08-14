@@ -77,7 +77,6 @@ class LaMetricCloud:
                     raise_for_status=True,
                 )
 
-            print(await response.text())
             content_type = response.headers.get("Content-Type", "")
             if "application/json" not in content_type:
                 raise LaMetricError(response.status, {"message": await response.text()})

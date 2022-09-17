@@ -65,12 +65,12 @@ class Wifi(BaseModel):
     active: bool
     mac: str
     available: bool
-    encryption: str
+    encryption: Optional[str] = None
     ssid: str
     ip: IPv4Address
     mode: WifiMode
     netmask: str
-    rssi: int
+    rssi: Optional[int] = None
 
 
 class Device(BaseModel):

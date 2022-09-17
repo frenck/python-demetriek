@@ -58,7 +58,7 @@ class LaMetricDevice:
             LaMetric device.
 
         Raises:
-            LaMetricConnectionError: An error occurred while communitcation with
+            LaMetricConnectionError: An error occurred while communication with
                 the LaMetric device.
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
                 with the LaMetric device.

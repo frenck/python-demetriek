@@ -85,7 +85,7 @@ async def test_get_device2(aresponses: ResponsesMockServer) -> None:
     assert device.device_id == "12345"
     assert device.name == "Frenck's LaMetric"
     assert device.os_version == "2.2.2"
-    assert device.mode is DeviceMode.AUTO
+    assert device.mode is DeviceMode.SCHEDULE
     assert device.model == "LM 37X8"
     assert device.audio.volume == 100
     assert device.audio.volume_range

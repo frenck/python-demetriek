@@ -16,6 +16,7 @@ class DeviceMode(str, Enum):
     AUTO = "auto"
     KIOSK = "kiosk"
     MANUAL = "manual"
+    SCHEDULE = "schedule"
 
 
 class DeviceState(str, Enum):

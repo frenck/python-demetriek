@@ -53,7 +53,7 @@
     "width": 37
   },
   "id": "12345",
-  "mode": "auto",
+  "mode": "schedule",
   "model": "LM 37X8",
   "name": "Frenck's LaMetric",
   "os_version": "2.2.2",

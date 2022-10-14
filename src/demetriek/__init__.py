@@ -15,6 +15,7 @@ from .const import (
 )
 from .device import LaMetricDevice
 from .exceptions import (
+    LaMetricAuthenticationError,
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
@@ -52,6 +53,7 @@ __all__ = [
     "Goal",
     "GoalData",
     "LaMetricCloud",
+    "LaMetricAuthenticationError",
     "LaMetricConnectionError",
     "LaMetricConnectionTimeoutError",
     "LaMetricDevice",

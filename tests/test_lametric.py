@@ -6,7 +6,12 @@ import aiohttp
 import pytest
 from aresponses import Response, ResponsesMockServer
 
-from demetriek import LaMetricConnectionError, LaMetricDevice, LaMetricError
+from demetriek import (
+    LaMetricAuthenticationError,
+    LaMetricConnectionError,
+    LaMetricDevice,
+    LaMetricError,
+)
 
 
 @pytest.mark.asyncio
@@ -173,4 +178,21 @@ async def test_no_json_response(aresponses: ResponsesMockServer) -> None:
     async with aiohttp.ClientSession() as session:
         demetriek = LaMetricDevice("127.0.0.2", api_key="abc", session=session)
         with pytest.raises(LaMetricError):
+            assert await demetriek._request("/")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status", {401, 403})
+async def test_http_error401(aresponses: ResponsesMockServer, status: int) -> None:
+    """Test HTTP 401 response handling."""
+    aresponses.add(
+        "127.0.0.2:4343",
+        "/",
+        "GET",
+        aresponses.Response(text="Access denied!", status=status),
+    )
+
+    async with aiohttp.ClientSession() as session:
+        demetriek = LaMetricDevice("127.0.0.2", api_key="abc", session=session)
+        with pytest.raises(LaMetricAuthenticationError):
             assert await demetriek._request("/")

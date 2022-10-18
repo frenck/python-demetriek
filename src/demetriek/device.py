@@ -291,8 +291,7 @@ class LaMetricDevice:
         Returns:
             A Notification objects.
         """
-        data = await self._request("/api/v2/device/notifications/current")
-        if data:
+        if data := await self._request("/api/v2/device/notifications/current"):
             return parse_obj_as(Notification, data)
         return None
 

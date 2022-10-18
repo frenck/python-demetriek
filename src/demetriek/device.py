@@ -266,7 +266,7 @@ class LaMetricDevice:
     async def dismiss_all_notifications(self) -> None:
         """Dismiss all notifications notification."""
         if not (notifications := await self.notification_queue()):
-            return None
+            return
 
         # Dismiss notifications in reverse order to avoid them showing up
         # during rapid dismissal.

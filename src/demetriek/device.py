@@ -263,6 +263,38 @@ class LaMetricDevice:
             method=hdrs.METH_DELETE,
         )
 
+    async def dismiss_all_notifications(self) -> None:
+        """Dismiss all notifications notification."""
+        if not (notifications := await self.notification_queue()):
+            return
+
+        # Dismiss notifications in reverse order to avoid them showing up
+        # during rapid dismissal.
+        for notification in reversed(notifications):
+            if notification.notification_id:
+                await self.dismiss_notification(
+                    notification_id=notification.notification_id
+                )
+
+    async def dismiss_current_notification(self) -> None:
+        """Dismiss current notification."""
+        if (
+            notification := await self.notification_current()
+        ) and notification.notification_id:
+            await self.dismiss_notification(
+                notification_id=notification.notification_id
+            )
+
+    async def notification_current(self) -> Notification | None:
+        """Get the current notification.
+
+        Returns:
+            A Notification objects.
+        """
+        if data := await self._request("/api/v2/device/notifications/current"):
+            return parse_obj_as(Notification, data)
+        return None
+
     async def notification_queue(self) -> list[Notification]:
         """Get the list of all notifications in the queue.
 

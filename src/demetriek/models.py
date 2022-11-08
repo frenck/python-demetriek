@@ -49,6 +49,12 @@ class Bluetooth(BaseModel):
     address: str
 
 
+class DisplayScreensaver(BaseModel):
+    """Object holding the screensaver data of an LaMetric device."""
+
+    enabled: bool
+
+
 class Display(BaseModel):
     """Object holding the display state of an LaMetric device."""
 
@@ -57,6 +63,7 @@ class Display(BaseModel):
     width: int
     height: int
     display_type: DisplayType = Field(None, alias="type")
+    screensaver: DisplayScreensaver
 
 
 class Wifi(BaseModel):

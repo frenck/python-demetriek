@@ -20,6 +20,7 @@ from .exceptions import (
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
+    raise_on_data_error,
 )
 from .models import Audio, Bluetooth, Device, Display, Notification, Wifi
 
@@ -80,31 +81,42 @@ class LaMetricDevice:
                     auth=BasicAuth("dev", self.api_key),
                     headers={"Accept": "application/json"},
                     json=data,
-                    raise_for_status=True,
                     ssl=False,
                 )
 
             content_type = response.headers.get("Content-Type", "")
             if "application/json" not in content_type:
                 raise LaMetricError(response.status, {"message": await response.text()})
-            return await response.json()
+
+            data: dict[str, Any] = await response.json()
+
+            try:
+                response.raise_for_status()
+            except aiohttp.ClientResponseError as exception:
+                raise_on_data_error(data, exception)
 
         except asyncio.TimeoutError as exception:
             raise LaMetricConnectionTimeoutError(
                 f"Timeout occurred while connecting to the LaMetric device at {self.host}"
             ) from exception
-        except aiohttp.ClientResponseError as exception:
-            if exception.status in [401, 403]:
-                raise LaMetricAuthenticationError(
-                    f"Authentication to the LaMetric device at {self.host} failed"
-                ) from exception
-            raise LaMetricError(
-                f"Error occurred while connecting to the LaMetric device at {self.host}"
-            ) from exception
-        except (aiohttp.ClientError, socket.gaierror) as exception:
+        except socket.gaierror as exception:
             raise LaMetricConnectionError(
                 f"Error occurred while communicating with the LaMetric device at {self.host}"
             ) from exception
+
+        return data
+        # except aiohttp.ClientResponseError as exception:
+        #     if exception.status in [401, 403]:
+        #         raise LaMetricAuthenticationError(
+        #             f"Authentication to the LaMetric device at {self.host} failed"
+        #         ) from exception
+        #     raise LaMetricError(
+        #         f"Error occurred while connecting to the LaMetric device at {self.host}"
+        #     ) from exception
+        # except (aiohttp.ClientError, socket.gaierror) as exception:
+        #     raise LaMetricConnectionError(
+        #         f"Error occurred while communicating with the LaMetric device at {self.host}"
+        #     ) from exception
 
     async def device(self) -> Device:
         """Get LaMetric device information.

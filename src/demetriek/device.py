@@ -16,7 +16,6 @@ from yarl import URL
 
 from .const import BrightnessMode
 from .exceptions import (
-    LaMetricAuthenticationError,
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
@@ -60,7 +59,6 @@ class LaMetricDevice:
             LaMetric device.
 
         Raises:
-            LaMetricAuthenticationError: If the API key is invalid.
             LaMetricConnectionError: An error occurred while communication with
                 the LaMetric device.
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
@@ -88,12 +86,12 @@ class LaMetricDevice:
             if "application/json" not in content_type:
                 raise LaMetricError(response.status, {"message": await response.text()})
 
-            data: dict[str, Any] = await response.json()
+            response_data: dict[str, Any] = await response.json()
 
             try:
                 response.raise_for_status()
             except aiohttp.ClientResponseError as exception:
-                raise_on_data_error(data, exception)
+                raise_on_data_error(response_data, exception)
 
         except asyncio.TimeoutError as exception:
             raise LaMetricConnectionTimeoutError(
@@ -104,19 +102,7 @@ class LaMetricDevice:
                 f"Error occurred while communicating with the LaMetric device at {self.host}"
             ) from exception
 
-        return data
-        # except aiohttp.ClientResponseError as exception:
-        #     if exception.status in [401, 403]:
-        #         raise LaMetricAuthenticationError(
-        #             f"Authentication to the LaMetric device at {self.host} failed"
-        #         ) from exception
-        #     raise LaMetricError(
-        #         f"Error occurred while connecting to the LaMetric device at {self.host}"
-        #     ) from exception
-        # except (aiohttp.ClientError, socket.gaierror) as exception:
-        #     raise LaMetricConnectionError(
-        #         f"Error occurred while communicating with the LaMetric device at {self.host}"
-        #     ) from exception
+        return response_data
 
     async def device(self) -> Device:
         """Get LaMetric device information.

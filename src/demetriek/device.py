@@ -97,7 +97,7 @@ class LaMetricDevice:
             raise LaMetricConnectionTimeoutError(
                 f"Timeout occurred while connecting to the LaMetric device at {self.host}"
             ) from exception
-        except socket.gaierror as exception:
+        except (aiohttp.ClientError, socket.gaierror) as exception:
             raise LaMetricConnectionError(
                 f"Error occurred while communicating with the LaMetric device at {self.host}"
             ) from exception

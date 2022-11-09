@@ -22,27 +22,33 @@ class LaMetricConnectionTimeoutError(LaMetricConnectionError):
     """LaMetric connection Timeout exception."""
 
 
-EXCEPTION_MESSAGE_MAP = {
-    "Authorization is required": LaMetricAuthenticationError,
-}
-
-
 def raise_on_data_error(
-    data: dict[str, Any], raising_error: aiohttp.ClientResponseError
+    host: str, data: dict[str, Any], raising_exception: aiohttp.ClientResponseError
 ) -> None:
     """Raise an exception (if appropriate) based on response data.
 
     Args:
+        host: The IP address/hostname of the LaMetric device.
         data: An API response payload.
-        raising_error: The original aiohttp.ClientResponseError.
+        raising_exception: The original aiohttp.ClientResponseError.
 
     Raises:
-        exc: An appropriate LaMetricError (or subclass).
+        LaMetricAuthenticationError: If the API key is invalid.
+        LaMetricError: If the response data contains an error message.
     """
     if (errors := data.get("errors")) is None:
         return
 
-    error = errors[0]
-    exc = EXCEPTION_MESSAGE_MAP.get(error["message"], LaMetricError)
-    exc.__cause__ = raising_error
-    raise exc(error)
+    # Although this exception doesn't make use of the response data, we include it here
+    # for completeness and specificity:
+    if raising_exception.status in (401, 403):
+        raise LaMetricAuthenticationError(
+            f"Authentication to the LaMetric device at {host} failed"
+        ) from raising_exception
+
+    raise LaMetricError(
+        (
+            f"Error occurred while communicating with the LaMetric device at {host}: "
+            f"{errors[0]['message']}"
+        )
+    ) from raising_exception

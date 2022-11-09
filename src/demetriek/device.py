@@ -91,7 +91,7 @@ class LaMetricDevice:
             try:
                 response.raise_for_status()
             except aiohttp.ClientResponseError as exception:
-                raise_on_data_error(response_data, exception)
+                raise_on_data_error(self.host, response_data, exception)
 
         except asyncio.TimeoutError as exception:
             raise LaMetricConnectionTimeoutError(

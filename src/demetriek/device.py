@@ -60,6 +60,7 @@ class LaMetricDevice:
             LaMetric device.
 
         Raises:
+            LaMetricAuthenticationError: If the API key is invalid.
             LaMetricConnectionError: An error occurred while communication with
                 the LaMetric device.
             LaMetricConnectionTimeoutError: A timeout occurred while communicating

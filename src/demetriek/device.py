@@ -16,6 +16,7 @@ from yarl import URL
 
 from .const import BrightnessMode
 from .exceptions import (
+    LaMetricAuthenticationError,
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
@@ -91,6 +92,10 @@ class LaMetricDevice:
             try:
                 response.raise_for_status()
             except aiohttp.ClientResponseError as exception:
+                if exception.status in (401, 403):
+                    raise LaMetricAuthenticationError(
+                        f"Authentication to the LaMetric device at {self.host} failed"
+                    ) from exception
                 raise_on_data_error(self.host, response_data, exception)
 
         except asyncio.TimeoutError as exception:

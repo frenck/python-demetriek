@@ -39,13 +39,6 @@ def raise_on_data_error(
     if (errors := data.get("errors")) is None:
         return
 
-    # Although this exception doesn't make use of the response data, we include it here
-    # for completeness and specificity:
-    if raising_exception.status in (401, 403):
-        raise LaMetricAuthenticationError(
-            f"Authentication to the LaMetric device at {host} failed"
-        ) from raising_exception
-
     raise LaMetricError(
         (
             f"Error occurred while communicating with the LaMetric device at {host}: "

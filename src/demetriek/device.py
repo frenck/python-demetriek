@@ -144,6 +144,7 @@ class LaMetricDevice:
         *,
         brightness: int | None = None,
         brightness_mode: BrightnessMode | None = None,
+        screensaver_enabled: bool | None = None,
     ) -> Display:
         """Get or set LaMetric device display information.
 
@@ -151,6 +152,7 @@ class LaMetricDevice:
         ----
             brightness: Brightness level to set.
             brightness_mode: Brightness mode to set.
+            screensaver_enabled: Whether the screensaver should be enabled.
 
         Returns:
         -------
@@ -164,6 +166,9 @@ class LaMetricDevice:
 
         if brightness_mode is not None:
             data["brightness_mode"] = brightness_mode
+
+        if screensaver_enabled is not None:
+            data["screensaver"] = {"enabled": screensaver_enabled}
 
         if data:
             response = await self._request(

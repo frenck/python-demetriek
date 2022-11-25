@@ -42,6 +42,9 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
         assert data == {
             "brightness": 99,
             "brightness_mode": "manual",
+            "screensaver": {
+                "enabled": False,
+            },
         }
         return aresponses.Response(
             status=200,
@@ -56,6 +59,7 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
         display = await demetriek.display(
             brightness=99,
             brightness_mode=BrightnessMode.MANUAL,
+            screensaver_enabled=False,
         )
 
     assert display
@@ -64,3 +68,4 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
     assert display.width == 37
     assert display.height == 8
     assert display.display_type is DisplayType.MIXED
+    assert display.screensaver.enabled is False

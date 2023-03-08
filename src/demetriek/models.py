@@ -26,16 +26,16 @@ from .const import (
 class Range(BaseModel):
     """Object holding an integer range."""
 
-    range_min: int = Field(..., alias="min")
-    range_max: int = Field(..., alias="max")
+    range_min: int = Field(alias="min")
+    range_max: int = Field(alias="max")
 
 
 class Audio(BaseModel):
     """Object holding the audio state of an LaMetric device."""
 
     volume: int
-    volume_range: Optional[Range]
-    volume_limit: Optional[Range]
+    volume_range: Optional[Range] = None
+    volume_limit: Optional[Range] = None
 
 
 class Bluetooth(BaseModel):
@@ -56,7 +56,7 @@ class Display(BaseModel):
     brightness_mode: BrightnessMode
     width: int
     height: int
-    display_type: DisplayType = Field(None, alias="type")
+    display_type: Optional[DisplayType] = Field(default=None, alias="type")
 
 
 class Wifi(BaseModel):
@@ -76,7 +76,7 @@ class Wifi(BaseModel):
 class Device(BaseModel):
     """Object holding the state of an LaMetric device."""
 
-    device_id: str = Field(..., alias="id")
+    device_id: str = Field(alias="id")
     name: str
     serial_number: str
     os_version: AwesomeVersion
@@ -91,7 +91,7 @@ class Device(BaseModel):
 class Chart(BaseModel):
     """Object holding the chart frame of an LaMetric notification."""
 
-    data: list[int] = Field(..., alias="chartData")
+    data: list[int] = Field(alias="chartData")
 
     class Config:
         """Chart model configuration."""
@@ -119,7 +119,7 @@ class Goal(BaseModel):
     """Object holding the goal frame of an LaMetric notification."""
 
     icon: Optional[Union[int, str]] = None
-    data: GoalData = Field(..., alias="goalData")
+    data: GoalData = Field(alias="goalData")
 
     class Config:
         """Goal model configuration."""
@@ -130,8 +130,8 @@ class Goal(BaseModel):
 class Sound(BaseModel):
     """Object holding the notification sound state of an LaMetric device."""
 
-    category: Optional[NotificationSoundCategory]
-    sound: Union[AlarmSound, NotificationSound] = Field(..., alias="id")
+    category: Optional[NotificationSoundCategory] = None
+    sound: Union[AlarmSound, NotificationSound] = Field(alias="id")
     repeat: int = 1
 
     @root_validator
@@ -179,8 +179,8 @@ class Notification(BaseModel):
     icon_type: Optional[NotificationIconType] = None
     life_time: Optional[float] = None
     priority: Optional[NotificationPriority] = None
-    notification_id: Optional[int] = Field(None, alias="id")
-    notification_type: Optional[NotificationType] = Field(None, alias="type")
+    notification_id: Optional[int] = Field(default=None, alias="id")
+    notification_type: Optional[NotificationType] = Field(default=None, alias="type")
 
 
 class User(BaseModel):
@@ -191,19 +191,19 @@ class User(BaseModel):
     name: str
     private_apps_count: int
     private_device_count: int
-    user_id: int = Field(..., alias="id")
+    user_id: int = Field(alias="id")
 
 
 class CloudDevice(BaseModel):
     """Object holding the state of an LaMetric device from the Cloud."""
 
-    device_id: int = Field(..., alias="id")
+    device_id: int = Field(alias="id")
     name: str
     state: DeviceState
     serial_number: str
     api_key: str
-    ip: IPv4Address = Field(..., alias="ipv4_internal")
+    ip: IPv4Address = Field(alias="ipv4_internal")
     mac: str
-    ssid: str = Field(..., alias="wifi_ssid")
+    ssid: str = Field(alias="wifi_ssid")
     created_at: datetime
     updated_at: datetime

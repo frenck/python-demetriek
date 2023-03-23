@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import aiohttp
 import async_timeout
@@ -14,7 +14,6 @@ from aiohttp.helpers import BasicAuth
 from pydantic import parse_obj_as
 from yarl import URL
 
-from .const import BrightnessMode
 from .exceptions import (
     LaMetricAuthenticationError,
     LaMetricConnectionError,
@@ -22,6 +21,9 @@ from .exceptions import (
     LaMetricError,
 )
 from .models import Audio, Bluetooth, Device, Display, Notification, Wifi
+
+if TYPE_CHECKING:
+    from .const import BrightnessMode
 
 
 @dataclass
@@ -36,7 +38,10 @@ class LaMetricDevice:
     _close_session: bool = False
 
     @backoff.on_exception(
-        backoff.expo, LaMetricConnectionError, max_tries=3, logger=None
+        backoff.expo,
+        LaMetricConnectionError,
+        max_tries=3,
+        logger=None,
     )
     async def _request(
         self,
@@ -50,15 +55,18 @@ class LaMetricDevice:
         the LaMetric device.
 
         Args:
+        ----
             uri: Request URI, for example `/api/v2/device`.
             method: HTTP method to use for the request.E.g., "GET" or "POST".
             data: Dictionary of data to send to the LaMetric device.
 
         Returns:
+        -------
             A Python dictionary (JSON decoded) with the response from the
             LaMetric device.
 
         Raises:
+        ------
             LaMetricAuthenticationError: If the API key is invalid.
             LaMetricConnectionError: An error occurred while communication with
                 the LaMetric device.
@@ -86,30 +94,39 @@ class LaMetricDevice:
 
             content_type = response.headers.get("Content-Type", "")
             if "application/json" not in content_type:
-                raise LaMetricError(response.status, {"message": await response.text()})
-            return await response.json()
+                raise LaMetricError(  # noqa: TRY301
+                    response.status,
+                    {"message": await response.text()},
+                )
+            return await response.json()  # noqa: TRY300
 
         except asyncio.TimeoutError as exception:
-            raise LaMetricConnectionTimeoutError(
-                f"Timeout occurred while connecting to the LaMetric device at {self.host}"
-            ) from exception
+            msg = (
+                "Timeout occurred while connecting to the LaMetric device"
+                f" at {self.host}"
+            )
+            raise LaMetricConnectionTimeoutError(msg) from exception
         except aiohttp.ClientResponseError as exception:
             if exception.status in [401, 403]:
-                raise LaMetricAuthenticationError(
-                    f"Authentication to the LaMetric device at {self.host} failed"
-                ) from exception
-            raise LaMetricError(
-                f"Error occurred while connecting to the LaMetric device at {self.host}"
-            ) from exception
+                msg = f"Authentication to the LaMetric device at {self.host} failed"
+                raise LaMetricAuthenticationError(msg) from exception
+            msg = (
+                "Error occurred while connecting to the LaMetric device"
+                f" at {self.host}"
+            )
+            raise LaMetricError(msg) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
-            raise LaMetricConnectionError(
-                f"Error occurred while communicating with the LaMetric device at {self.host}"
-            ) from exception
+            msg = (
+                "Error occurred while communicating with the LaMetric device"
+                f" at {self.host}"
+            )
+            raise LaMetricConnectionError(msg) from exception
 
     async def device(self) -> Device:
         """Get LaMetric device information.
 
-        Returns:
+        Returns
+        -------
             A Device object, with information about the LaMetric device.
         """
         response = await self._request("/api/v2/device")
@@ -131,10 +148,12 @@ class LaMetricDevice:
         """Get or set LaMetric device display information.
 
         Args:
+        ----
             brightness: Brightness level to set.
             brightness_mode: Brightness mode to set.
 
         Returns:
+        -------
             A Display object, with latest or updated information about
             the display of the LaMetric device.
         """
@@ -148,7 +167,9 @@ class LaMetricDevice:
 
         if data:
             response = await self._request(
-                "/api/v2/device/display", method=hdrs.METH_PUT, data=data
+                "/api/v2/device/display",
+                method=hdrs.METH_PUT,
+                data=data,
             )
             return Display.parse_obj(response["success"]["data"])
 
@@ -159,9 +180,11 @@ class LaMetricDevice:
         """Get or set LaMetric device audio information.
 
         Args:
+        ----
             volume: Volume level to set.
 
         Returns:
+        -------
             An Audio object, with latest or updated information about the
             audio state of the LaMetric device.
         """
@@ -172,7 +195,9 @@ class LaMetricDevice:
 
         if data:
             response = await self._request(
-                "/api/v2/device/audio", method=hdrs.METH_PUT, data=data
+                "/api/v2/device/audio",
+                method=hdrs.METH_PUT,
+                data=data,
             )
             return Audio.parse_obj(response["success"]["data"])
 
@@ -183,9 +208,11 @@ class LaMetricDevice:
         """Get LaMetric device bluetooth information.
 
         Args:
+        ----
             active: Whether to activate or deactivate Bluetooth.
 
         Returns:
+        -------
             A Bluetooth object, with the latest or updated Bluetooth information.
         """
         data: dict[str, int] = {}
@@ -195,7 +222,9 @@ class LaMetricDevice:
 
         if data:
             response = await self._request(
-                "/api/v2/device/bluetooth", method=hdrs.METH_PUT, data=data
+                "/api/v2/device/bluetooth",
+                method=hdrs.METH_PUT,
+                data=data,
             )
             response = response["success"]["data"]
         else:
@@ -206,7 +235,8 @@ class LaMetricDevice:
     async def wifi(self) -> Wifi:
         """Get LaMetric device bluetooth information.
 
-        Returns:
+        Returns
+        -------
             A Wifi object with the latest Wi-Fi state of the device.
         """
         data = await self._request("/api/v2/device/wifi")
@@ -235,9 +265,11 @@ class LaMetricDevice:
         """Send a notification to a LaMetric device.
 
         Args:
+        ----
             notification: A Notification object.
 
         Returns:
+        -------
             The ID of the notification.
         """
         response = await self._request(
@@ -256,6 +288,7 @@ class LaMetricDevice:
         In case if it is already visible - dismisses it.
 
         Args:
+        ----
             notification_id: Notification ID to dismiss.
         """
         await self._request(
@@ -273,7 +306,7 @@ class LaMetricDevice:
         for notification in reversed(notifications):
             if notification.notification_id:
                 await self.dismiss_notification(
-                    notification_id=notification.notification_id
+                    notification_id=notification.notification_id,
                 )
 
     async def dismiss_current_notification(self) -> None:
@@ -282,13 +315,14 @@ class LaMetricDevice:
             notification := await self.notification_current()
         ) and notification.notification_id:
             await self.dismiss_notification(
-                notification_id=notification.notification_id
+                notification_id=notification.notification_id,
             )
 
     async def notification_current(self) -> Notification | None:
         """Get the current notification.
 
-        Returns:
+        Returns
+        -------
             A Notification objects.
         """
         if data := await self._request("/api/v2/device/notifications/current"):
@@ -300,7 +334,8 @@ class LaMetricDevice:
 
         Notifications with higher priority will be first in the list.
 
-        Returns:
+        Returns
+        -------
             A list of Notification objects.
         """
         data = await self._request("/api/v2/device/notifications")
@@ -314,7 +349,8 @@ class LaMetricDevice:
     async def __aenter__(self) -> LaMetricDevice:
         """Async enter.
 
-        Returns:
+        Returns
+        -------
             The LaMetricDevice object.
         """
         return self
@@ -323,6 +359,7 @@ class LaMetricDevice:
         """Async exit.
 
         Args:
+        ----
             _exc_info: Exec type.
         """
         await self.close()

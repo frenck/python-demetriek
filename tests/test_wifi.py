@@ -3,7 +3,6 @@
 from ipaddress import IPv4Address
 
 import aiohttp
-import pytest
 from aresponses import ResponsesMockServer
 
 from demetriek import LaMetricDevice
@@ -12,7 +11,6 @@ from demetriek.const import WifiMode
 from . import load_fixture
 
 
-@pytest.mark.asyncio
 async def test_get_wifi(aresponses: ResponsesMockServer) -> None:
     """Test getting audio information."""
     aresponses.add(
@@ -41,7 +39,6 @@ async def test_get_wifi(aresponses: ResponsesMockServer) -> None:
     assert wifi.rssi == 42
 
 
-@pytest.mark.asyncio
 async def test_get_wifi2(aresponses: ResponsesMockServer) -> None:
     """Test getting audio information."""
     aresponses.add(

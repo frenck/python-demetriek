@@ -32,7 +32,10 @@ class LaMetricCloud:
     _close_session: bool = False
 
     @backoff.on_exception(
-        backoff.expo, LaMetricConnectionError, max_tries=3, logger=None
+        backoff.expo,
+        LaMetricConnectionError,
+        max_tries=3,
+        logger=None,
     )
     async def _request(
         self,
@@ -44,13 +47,16 @@ class LaMetricCloud:
         the LaMetric cloud.
 
         Args:
+        ----
             uri: Request URI, for example `/api/v2/users/me`.
 
         Returns:
+        -------
             A Python dictionary (JSON decoded) with the response from the
             LaMetric device.
 
         Raises:
+        ------
             LaMetricConnectionError: An error occurred while communication with
                 the LaMetric device.
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
@@ -79,22 +85,24 @@ class LaMetricCloud:
 
             content_type = response.headers.get("Content-Type", "")
             if "application/json" not in content_type:
-                raise LaMetricError(response.status, {"message": await response.text()})
-            return await response.json()
+                raise LaMetricError(  # noqa: TRY301
+                    response.status,
+                    {"message": await response.text()},
+                )
+            return await response.json()  # noqa: TRY300
 
         except asyncio.TimeoutError as exception:
-            raise LaMetricConnectionTimeoutError(
-                "Timeout occurred while connecting to the LaMetric cloud"
-            ) from exception
+            msg = "Timeout occurred while connecting to the LaMetric cloud"
+            raise LaMetricConnectionTimeoutError(msg) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
-            raise LaMetricConnectionError(
-                "Error occurred while communicating with the LaMetric cloud"
-            ) from exception
+            msg = "Error occurred while communicating with the LaMetric cloud"
+            raise LaMetricConnectionError(msg) from exception
 
     async def current_user(self) -> User:
         """Get LaMetric user information.
 
-        Returns:
+        Returns
+        -------
             A User object, with information about the current user.
         """
         response = await self._request("/api/v2/me")
@@ -103,7 +111,8 @@ class LaMetricCloud:
     async def devices(self) -> list[CloudDevice]:
         """Get LaMetric devices from the cloud.
 
-        Returns:
+        Returns
+        -------
             A list of CloudDevices.
         """
         response = await self._request("/api/v2/users/me/devices")
@@ -113,9 +122,11 @@ class LaMetricCloud:
         """Get a LaMetric device from the cloud.
 
         Args:
+        ----
             device_id: The ID of the device to get information for.
 
         Returns:
+        -------
             A CloudDevice object, with information about the request device.
         """
         response = await self._request(f"/api/v2/users/me/devices/{device_id}")
@@ -129,7 +140,8 @@ class LaMetricCloud:
     async def __aenter__(self) -> LaMetricCloud:
         """Async enter.
 
-        Returns:
+        Returns
+        -------
             The LaMetricCloud object.
         """
         return self
@@ -138,6 +150,7 @@ class LaMetricCloud:
         """Async exit.
 
         Args:
+        ----
             _exc_info: Exec type.
         """
         await self.close()

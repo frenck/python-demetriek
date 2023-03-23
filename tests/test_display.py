@@ -1,7 +1,6 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 # pylint: disable=protected-access
 import aiohttp
-import pytest
 from aresponses import Response, ResponsesMockServer
 
 from demetriek import LaMetricDevice
@@ -10,7 +9,6 @@ from demetriek.const import BrightnessMode, DisplayType
 from . import load_fixture
 
 
-@pytest.mark.asyncio
 async def test_get_display(aresponses: ResponsesMockServer) -> None:
     """Test getting display information."""
     aresponses.add(
@@ -35,7 +33,6 @@ async def test_get_display(aresponses: ResponsesMockServer) -> None:
     assert display.display_type is DisplayType.MIXED
 
 
-@pytest.mark.asyncio
 async def test_set_display(aresponses: ResponsesMockServer) -> None:
     """Test setting display properties."""
 
@@ -57,7 +54,8 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
     async with aiohttp.ClientSession() as session:
         demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
         display = await demetriek.display(
-            brightness=99, brightness_mode=BrightnessMode.MANUAL
+            brightness=99,
+            brightness_mode=BrightnessMode.MANUAL,
         )
 
     assert display

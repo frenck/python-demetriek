@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from ipaddress import IPv4Address
-from typing import Any, Optional, Union
+from typing import Any
 
 from awesomeversion import AwesomeVersion
 from pydantic import BaseModel, Field, root_validator
@@ -34,8 +34,8 @@ class Audio(BaseModel):
     """Object holding the audio state of an LaMetric device."""
 
     volume: int
-    volume_range: Optional[Range] = None
-    volume_limit: Optional[Range] = None
+    volume_range: Range | None
+    volume_limit: Range | None
 
 
 class Bluetooth(BaseModel):
@@ -56,7 +56,7 @@ class Display(BaseModel):
     brightness_mode: BrightnessMode
     width: int
     height: int
-    display_type: Optional[DisplayType] = Field(default=None, alias="type")
+    display_type: DisplayType | None = Field(default=None, alias="type")
 
 
 class Wifi(BaseModel):
@@ -65,12 +65,12 @@ class Wifi(BaseModel):
     active: bool
     mac: str
     available: bool
-    encryption: Optional[str] = None
+    encryption: str | None = None
     ssid: str
     ip: IPv4Address
     mode: WifiMode
     netmask: str
-    rssi: Optional[int] = None
+    rssi: int | None = None
 
 
 class Device(BaseModel):
@@ -102,7 +102,7 @@ class Chart(BaseModel):
 class Simple(BaseModel):
     """Object holding the simple frame of an LaMetric notification."""
 
-    icon: Optional[Union[int, str]] = None
+    icon: int | str | None = None
     text: str
 
 
@@ -112,14 +112,14 @@ class GoalData(BaseModel):
     current: int
     end: int
     start: int
-    unit: Optional[str] = None
+    unit: str | None = None
 
 
 class Goal(BaseModel):
     """Object holding the goal frame of an LaMetric notification."""
 
-    icon: Optional[Union[int, str]] = None
-    data: GoalData = Field(alias="goalData")
+    icon: int | str | None = None
+    data: GoalData = Field(..., alias="goalData")
 
     class Config:
         """Goal model configuration."""
@@ -130,19 +130,21 @@ class Goal(BaseModel):
 class Sound(BaseModel):
     """Object holding the notification sound state of an LaMetric device."""
 
-    category: Optional[NotificationSoundCategory] = None
-    sound: Union[AlarmSound, NotificationSound] = Field(alias="id")
+    category: NotificationSoundCategory | None
+    sound: AlarmSound | NotificationSound = Field(..., alias="id")
     repeat: int = 1
 
     @root_validator
     @classmethod
-    def infer_category(cls, values: dict[str, Any]) -> dict[str, Any]:  # noqa: F841
+    def infer_category(cls, values: dict[str, Any]) -> dict[str, Any]:
         """Infer the category of the sound.
 
         Args:
+        ----
             values: The values of the model.
 
         Returns:
+        -------
             The values of the model, with the category field inferred.
         """
         if values["category"] is not None:
@@ -165,8 +167,8 @@ class Sound(BaseModel):
 class Model(BaseModel):
     """Object holding the notification model of an LaMetric device."""
 
-    frames: list[Union[Chart, Goal, Simple]]
-    sound: Optional[Sound] = None
+    frames: list[Chart | Goal | Simple]
+    sound: Sound | None = None
     cycles: int = 1
 
 
@@ -174,13 +176,13 @@ class Notification(BaseModel):
     """Object holding a LaMetric notification."""
 
     model: Model
-    created: Optional[datetime] = None
-    expiration_date: Optional[datetime] = None
-    icon_type: Optional[NotificationIconType] = None
-    life_time: Optional[float] = None
-    priority: Optional[NotificationPriority] = None
-    notification_id: Optional[int] = Field(default=None, alias="id")
-    notification_type: Optional[NotificationType] = Field(default=None, alias="type")
+    created: datetime | None = None
+    expiration_date: datetime | None = None
+    icon_type: NotificationIconType | None = None
+    life_time: float | None = None
+    priority: NotificationPriority | None = None
+    notification_id: int | None = Field(None, alias="id")
+    notification_type: NotificationType | None = Field(None, alias="type")
 
 
 class User(BaseModel):

@@ -3,7 +3,6 @@
 from ipaddress import IPv4Address
 
 import aiohttp
-import pytest
 from aresponses import ResponsesMockServer
 
 from demetriek import LaMetricDevice
@@ -12,7 +11,6 @@ from demetriek.const import BrightnessMode, DeviceMode, DisplayType, WifiMode
 from . import load_fixture
 
 
-@pytest.mark.asyncio
 async def test_get_device(aresponses: ResponsesMockServer) -> None:
     """Test getting device information."""
     aresponses.add(
@@ -64,7 +62,6 @@ async def test_get_device(aresponses: ResponsesMockServer) -> None:
     assert device.wifi.rssi == 21
 
 
-@pytest.mark.asyncio
 async def test_get_device2(aresponses: ResponsesMockServer) -> None:
     """Test getting device information."""
     aresponses.add(

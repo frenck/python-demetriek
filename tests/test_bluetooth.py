@@ -1,7 +1,6 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 # pylint: disable=protected-access
 import aiohttp
-import pytest
 from aresponses import Response, ResponsesMockServer
 
 from demetriek import LaMetricDevice
@@ -9,7 +8,6 @@ from demetriek import LaMetricDevice
 from . import load_fixture
 
 
-@pytest.mark.asyncio
 async def test_get_bluetooth(aresponses: ResponsesMockServer) -> None:
     """Test getting bluetooth information."""
     aresponses.add(
@@ -35,7 +33,6 @@ async def test_get_bluetooth(aresponses: ResponsesMockServer) -> None:
     assert bluetooth.pairable is True
 
 
-@pytest.mark.asyncio
 async def test_set_audio(aresponses: ResponsesMockServer) -> None:
     """Test setting display properties."""
 
@@ -52,7 +49,10 @@ async def test_set_audio(aresponses: ResponsesMockServer) -> None:
         )
 
     aresponses.add(
-        "127.0.0.2:4343", "/api/v2/device/bluetooth", "PUT", response_handler
+        "127.0.0.2:4343",
+        "/api/v2/device/bluetooth",
+        "PUT",
+        response_handler,
     )
 
     async with aiohttp.ClientSession() as session:

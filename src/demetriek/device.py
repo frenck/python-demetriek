@@ -20,7 +20,6 @@ from .exceptions import (
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
-    raise_on_data_error,
 )
 from .models import Audio, Bluetooth, Device, Display, Notification, Wifi
 
@@ -97,7 +96,13 @@ class LaMetricDevice:
                     raise LaMetricAuthenticationError(
                         f"Authentication to the LaMetric device at {self.host} failed"
                     ) from exception
-                raise_on_data_error(self.host, response_data, exception)
+
+                raise LaMetricError(
+                    (
+                        f"Error occurred while communicating with the LaMetric device "
+                        f"at {self.host}: {response_data['errors'][0]['message']}"
+                    )
+                ) from exception
 
         except asyncio.TimeoutError as exception:
             raise LaMetricConnectionTimeoutError(

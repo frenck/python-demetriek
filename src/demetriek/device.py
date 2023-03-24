@@ -159,7 +159,7 @@ class LaMetricDevice:
             A Display object, with latest or updated information about
             the display of the LaMetric device.
         """
-        data: dict[str, int | BrightnessMode] = {}
+        data: dict[str, int | BrightnessMode | dict[str, bool]] = {}
 
         if brightness is not None:
             data["brightness"] = brightness

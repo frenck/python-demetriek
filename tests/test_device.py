@@ -51,6 +51,7 @@ async def test_get_device(aresponses: ResponsesMockServer) -> None:
     assert device.display.width == 37
     assert device.display.height == 8
     assert device.display.display_type is DisplayType.MIXED
+    assert device.display.screensaver.enabled is False
     assert device.wifi.active is True
     assert device.wifi.available is True
     assert device.wifi.mac == "AA:BB:CC:DD:EE:FF"

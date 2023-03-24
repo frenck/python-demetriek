@@ -16,9 +16,7 @@
         "enabled": false,
         "modes": {
           "time_based": {
-            "enabled": true,
-            "local_start_time": "01:00:39",
-            "start_time": "00:00:39"
+            "enabled": false
           },
           "when_dark": {
             "enabled": false

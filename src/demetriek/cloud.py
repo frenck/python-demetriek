@@ -89,7 +89,7 @@ class LaMetricCloud:
                     response.status,
                     {"message": await response.text()},
                 )
-            return await response.json()  # noqa: TRY300
+            return await response.json()
 
         except asyncio.TimeoutError as exception:
             msg = "Timeout occurred while connecting to the LaMetric cloud"

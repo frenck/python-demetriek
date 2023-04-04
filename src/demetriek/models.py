@@ -19,6 +19,7 @@ from .const import (
     NotificationSound,
     NotificationSoundCategory,
     NotificationType,
+    ParameterType,
     WifiMode,
 )
 
@@ -177,6 +178,32 @@ class Model(BaseModel):
     frames: list[Chart | Goal | Simple]
     sound: Sound | None = None
     cycles: int = 1
+
+
+class Widget(BaseModel):
+    index: int
+    package: str
+    visible: bool
+
+
+class Parameter(BaseModel):
+    data_type: ParameterType
+    name: str
+    required: bool
+    format: str | None = None
+
+
+class Application(BaseModel):
+    package: str
+    vendor: str
+    version: str
+    version_code: str
+
+    actions: dict[str, dict[str, Parameter]] | None = None
+    widgets: dict[str, Widget]
+
+    # not mentioned in the docs
+    title: str
 
 
 class Notification(BaseModel):

@@ -20,7 +20,7 @@ from .exceptions import (
     LaMetricConnectionTimeoutError,
     LaMetricError,
 )
-from .models import Audio, Bluetooth, Device, Display, Notification, Wifi
+from .models import Audio, Bluetooth, Device, Display, Notification, Wifi, DeviceMode, Application
 
 if TYPE_CHECKING:
     from .const import BrightnessMode
@@ -138,6 +138,19 @@ class LaMetricDevice:
         )
 
         return Device.parse_obj(response)
+
+    async def mode(self, *, mode: DeviceMode | None = None) -> DeviceMode:
+        """Get or Set the device mode"""
+        if mode:
+            response = await self._request(
+                "/api/v2/device",
+                method=hdrs.METH_PUT,
+                data={"mode": mode},
+            )
+            mode = DeviceMode(response["success"]["data"]["mode"])
+            return mode
+        dev = await self.device()
+        return dev.mode
 
     async def display(
         self,
@@ -345,6 +358,36 @@ class LaMetricDevice:
         """
         data = await self._request("/api/v2/device/notifications")
         return parse_obj_as(list[Notification], data)
+
+    async def apps(self) -> [dict[str, Application]]:
+        """Get the map of all apps on the device.
+
+        Returns
+        -------
+            A map of package -> Application objects.
+        """
+        data = await self._request("/api/v2/device/apps")
+        return parse_obj_as(dict[str, Application], data)
+
+    async def activate_widget(self, *, package: str, widget: str) -> None:
+        """Activates a specific widget"""
+        await self._request(
+            f"/api/v2/device/apps/{package}/widgets/{widget}/activate",
+            method=hdrs.METH_PUT,
+        )
+
+    async def do_action(self, *, package: str, widget: str, action: str, activate: bool = False,
+                        params: dict[string, Any] = {}) -> None:
+        """Invokers an action on a widget with optional parameters."""
+        await self._request(
+            f"/api/v2/device/apps/{package}/widgets/{widget}/actions",
+            method=hdrs.METH_POST,
+            data={
+                "id": action,
+                "activate": activate,
+                "params": params
+            }
+        )
 
     async def close(self) -> None:
         """Close open client session."""

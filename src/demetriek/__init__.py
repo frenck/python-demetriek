@@ -21,6 +21,7 @@ from .exceptions import (
     LaMetricError,
 )
 from .models import (
+    Application,
     Audio,
     Bluetooth,
     Chart,
@@ -31,15 +32,18 @@ from .models import (
     GoalData,
     Model,
     Notification,
+    Parameter,
     Range,
     Simple,
     Sound,
     User,
+    Widget,
     Wifi,
 )
 
 __all__ = [
     "AlarmSound",
+    "Application",
     "Audio",
     "Bluetooth",
     "BrightnessMode",
@@ -52,8 +56,8 @@ __all__ = [
     "DisplayType",
     "Goal",
     "GoalData",
-    "LaMetricCloud",
     "LaMetricAuthenticationError",
+    "LaMetricCloud",
     "LaMetricConnectionError",
     "LaMetricConnectionTimeoutError",
     "LaMetricDevice",
@@ -65,10 +69,12 @@ __all__ = [
     "NotificationSound",
     "NotificationSoundCategory",
     "NotificationType",
+    "Parameter",
     "Range",
     "Simple",
     "Sound",
     "User",
+    "Widget",
     "Wifi",
     "WifiMode",
 ]

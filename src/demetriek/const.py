@@ -129,3 +129,8 @@ class WifiMode(str, Enum):
 
     DHCP = "dhcp"
     STATIC = "static"
+
+class ParameterType(str, Enum):
+    BOOL = "bool"
+    INT = "int"
+    STRING = "string"

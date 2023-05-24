@@ -64,7 +64,7 @@ class Display(BaseModel):
     height: int
     display_type: DisplayType | None = Field(default=None, alias="type")
     screensaver: DisplayScreensaver
-    on: bool
+    on: bool | None = None
 
 
 class Wifi(BaseModel):

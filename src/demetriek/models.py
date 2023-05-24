@@ -63,9 +63,8 @@ class Display(BaseModel):
     width: int
     height: int
     display_type: DisplayType | None = Field(default=None, alias="type")
-    screensaver: DisplayScreensaver
     on: bool | None = None
-
+    screensaver: DisplayScreensaver
 
 class Wifi(BaseModel):
     """Object holding the Wi-Fi state of an LaMetric device."""

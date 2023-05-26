@@ -61,6 +61,7 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
             brightness=99,
             brightness_mode=BrightnessMode.MANUAL,
             screensaver_enabled=False,
+            on=True,
         )
 
     assert display

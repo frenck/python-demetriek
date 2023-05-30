@@ -46,7 +46,7 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
             "screensaver": {
                 "enabled": False,
             },
-            "on": True
+            "on": True,
         }
         return aresponses.Response(
             status=200,

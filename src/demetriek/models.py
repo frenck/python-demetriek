@@ -6,7 +6,15 @@ from ipaddress import IPv4Address
 from typing import Any
 
 from awesomeversion import AwesomeVersion
-from pydantic import BaseModel, Field, root_validator
+
+try:
+    from pydantic.v1 import BaseModel, Field, root_validator
+except ImportError:  # pragma: no cover
+    from pydantic import (  # pragma: no cover
+        BaseModel,
+        Field,
+        root_validator,
+    )
 
 from .const import (
     AlarmSound,

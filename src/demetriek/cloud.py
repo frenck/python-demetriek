@@ -10,7 +10,11 @@ import aiohttp
 import async_timeout
 import backoff
 from aiohttp import hdrs
-from pydantic import parse_obj_as
+
+try:
+    from pydantic.v1 import parse_obj_as
+except ImportError:  # pragma: no cover
+    from pydantic import parse_obj_as  # type: ignore[assignment] # pragma: no cover
 from yarl import URL
 
 from .exceptions import (

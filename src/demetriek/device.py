@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Self, cast
 
 import aiohttp
 import async_timeout
@@ -94,7 +94,7 @@ class LaMetricDevice:
 
             content_type = response.headers.get("Content-Type", "")
             if "application/json" not in content_type:
-                raise LaMetricError(  # noqa: TRY301
+                raise LaMetricError(
                     response.status,
                     {"message": await response.text()},
                 )
@@ -351,7 +351,7 @@ class LaMetricDevice:
         if self.session and self._close_session:
             await self.session.close()
 
-    async def __aenter__(self) -> LaMetricDevice:
+    async def __aenter__(self) -> Self:
         """Async enter.
 
         Returns
@@ -360,7 +360,7 @@ class LaMetricDevice:
         """
         return self
 
-    async def __aexit__(self, *_exc_info: Any) -> None:
+    async def __aexit__(self, *_exc_info: object) -> None:
         """Async exit.
 
         Args:

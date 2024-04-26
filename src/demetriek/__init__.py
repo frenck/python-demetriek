@@ -34,6 +34,7 @@ from .models import (
     Range,
     Simple,
     Sound,
+    SoundURL,
     User,
     Wifi,
 )
@@ -68,6 +69,7 @@ __all__ = [
     "Range",
     "Simple",
     "Sound",
+    "SoundURL",
     "User",
     "Wifi",
     "WifiMode",

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from ipaddress import IPv4Address
-from typing import Any
+from typing import Any, Union
 
 from awesomeversion import AwesomeVersion
 from pydantic import BaseModel, Field, root_validator
@@ -63,7 +63,7 @@ class Display(BaseModel):
     width: int
     height: int
     display_type: DisplayType | None = Field(default=None, alias="type")
-    screensaver: DisplayScreensaver
+    screensaver: DisplayScreensaver | None = Field(default=None)
 
 
 class Wifi(BaseModel):
@@ -89,11 +89,17 @@ class Device(BaseModel):
     os_version: AwesomeVersion
     mode: DeviceMode
     model: str
-    audio: Audio
-    bluetooth: Bluetooth
     display: Display
     wifi: Wifi
 
+class TimeDevice(Device):
+    """Object holding the state of an LaMetric TIME device."""
+
+    audio: Audio
+    bluetooth: Bluetooth
+
+class SkyDevice(Device):
+    """Object holding the state of an LaMetric SKY device."""
 
 class Chart(BaseModel):
     """Object holding the chart frame of an LaMetric notification."""
@@ -138,7 +144,7 @@ class Sound(BaseModel):
     """Object holding the notification sound state of an LaMetric device."""
 
     category: NotificationSoundCategory | None
-    sound: AlarmSound | NotificationSound = Field(..., alias="id")
+    sound: Union[AlarmSound, NotificationSound] | None = Field(..., alias="id")
     repeat: int = 1
 
     @root_validator
@@ -170,12 +176,18 @@ class Sound(BaseModel):
 
         allow_population_by_field_name = True
 
+class SoundURL(BaseModel):
+    """Sound URL model configuration"""
+
+    url: str
+    type: str = Field(default="mp3")
+    fallback: Sound | None
 
 class Model(BaseModel):
     """Object holding the notification model of an LaMetric device."""
 
     frames: list[Chart | Goal | Simple]
-    sound: Sound | None = None
+    sound: Union[SoundURL, Sound] | None
     cycles: int = 1
 
 

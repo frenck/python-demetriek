@@ -19,7 +19,16 @@ from .exceptions import (
     LaMetricConnectionTimeoutError,
     LaMetricError,
 )
-from .models import Audio, Bluetooth, Device, Display, Notification, Wifi
+from .models import (
+    Audio,
+    Bluetooth,
+    Device,
+    Display,
+    Notification,
+    SkyDevice,
+    TimeDevice,
+    Wifi,
+)
 
 if TYPE_CHECKING:
     from .const import BrightnessMode
@@ -137,7 +146,11 @@ class LaMetricDevice:
             ssid=response["wifi"].get("essid"),
             rssi=response["wifi"].get("strength"),
         )
-        return Device.from_dict(response)
+
+        if response["model"] == "sa5":
+            return SkyDevice.from_dict(response)
+
+        return TimeDevice.from_dict(response)
 
     async def display(
         self,

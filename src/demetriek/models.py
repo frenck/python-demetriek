@@ -73,7 +73,7 @@ class Display(DataClassORJSONMixin):
     )
     height: int
     on: bool | None = None
-    screensaver: DisplayScreensaver
+    screensaver: DisplayScreensaver | None = None
     width: int
 
 
@@ -96,8 +96,6 @@ class Wifi(DataClassORJSONMixin):
 class Device(DataClassORJSONMixin):
     """Object holding the state of an LaMetric device."""
 
-    audio: Audio
-    bluetooth: Bluetooth
     device_id: str = field(metadata=field_options(alias="id"))
     display: Display
     mode: DeviceMode
@@ -106,6 +104,19 @@ class Device(DataClassORJSONMixin):
     os_version: AwesomeVersion
     serial_number: str
     wifi: Wifi
+
+
+@dataclass(kw_only=True)
+class TimeDevice(Device):
+    """Object holding the state of an LaMetric TIME device."""
+
+    audio: Audio
+    bluetooth: Bluetooth
+
+
+@dataclass(kw_only=True)
+class SkyDevice(Device):
+    """Object holding the state of an LaMetric SKY device."""
 
 
 @dataclass(kw_only=True)
@@ -157,9 +168,11 @@ class Goal(DataClassORJSONMixin):
 class Sound(DataClassORJSONMixin):
     """Object holding the notification sound state of an LaMetric device."""
 
-    category: NotificationSoundCategory | None = None
     repeat: int = 1
-    sound: AlarmSound | NotificationSound = field(metadata=field_options(alias="id"))
+    sound: AlarmSound | NotificationSound = field(
+        default=None,
+        metadata=field_options(alias="id"),
+    )
 
     def __post_init__(self) -> None:
         """Infer the category of the sound."""
@@ -180,12 +193,21 @@ class Sound(DataClassORJSONMixin):
 
 
 @dataclass(kw_only=True)
+class SoundURL(DataClassORJSONMixin):
+    """Sound URL model configuration."""
+
+    url: str
+    type: str = "mp3"
+    fallback: Sound | None = None
+
+
+@dataclass(kw_only=True)
 class Model(DataClassORJSONMixin):
     """Object holding the notification model of an LaMetric device."""
 
     cycles: int = 1
     frames: list[Chart | Goal | Simple]
-    sound: Sound | None = None
+    sound: SoundURL | Sound | None
 
 
 @dataclass(kw_only=True)

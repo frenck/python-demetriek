@@ -51,7 +51,7 @@ pytest = "8.1.1"
 pytest-asyncio = "0.23.6"
 pytest-cov = "4.1.0"
 ruff = "0.5.0"
-safety = "3.0.1"
+safety = "3.2.3"
 yamllint = "1.35.1"
 
 [tool.coverage.run]

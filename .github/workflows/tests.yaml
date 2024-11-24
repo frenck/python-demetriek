@@ -64,13 +64,13 @@ jobs:
           cache: "poetry"
       - name: 🏗 Install workflow dependencies
         run: |
-          ls -R
           poetry config virtualenvs.create true
           poetry config virtualenvs.in-project true
       - name: 🏗 Install dependencies
         run: poetry install --no-interaction
       - name: 🚀 Process coverage results
         run: |
+          poetry run coverage combine coverage*/.coverage*
           poetry run coverage xml -i
       - name: 🚀 Upload coverage report
         uses: codecov/codecov-action@v4.5.0

@@ -1,12 +1,16 @@
 """Models for LaMetric."""
+
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from datetime import datetime
 from ipaddress import IPv4Address
 from typing import Any
 
 from awesomeversion import AwesomeVersion
-from pydantic import BaseModel, Field, root_validator
+from mashumaro import field_options
+from mashumaro.config import BaseConfig
+from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from .const import (
     AlarmSound,
@@ -23,14 +27,16 @@ from .const import (
 )
 
 
-class Range(BaseModel):
+@dataclass
+class Range(DataClassORJSONMixin):
     """Object holding an integer range."""
 
-    range_min: int = Field(alias="min")
-    range_max: int = Field(alias="max")
+    range_min: int = field(metadata=field_options(alias="min"))
+    range_max: int = field(metadata=field_options(alias="max"))
 
 
-class Audio(BaseModel):
+@dataclass
+class Audio(DataClassORJSONMixin):
     """Object holding the audio state of an LaMetric device."""
 
     volume: int
@@ -38,7 +44,8 @@ class Audio(BaseModel):
     volume_limit: Range | None
 
 
-class Bluetooth(BaseModel):
+@dataclass
+class Bluetooth(DataClassORJSONMixin):
     """Object holding the Bluetooth state of an LaMetric device."""
 
     available: bool
@@ -49,41 +56,48 @@ class Bluetooth(BaseModel):
     address: str
 
 
-class DisplayScreensaver(BaseModel):
+@dataclass
+class DisplayScreensaver(DataClassORJSONMixin):
     """Object holding the screensaver data of an LaMetric device."""
 
     enabled: bool
 
 
-class Display(BaseModel):
+@dataclass
+class Display(DataClassORJSONMixin):
     """Object holding the display state of an LaMetric device."""
 
     brightness: int
     brightness_mode: BrightnessMode
     width: int
     height: int
-    display_type: DisplayType | None = Field(default=None, alias="type")
     screensaver: DisplayScreensaver
+    display_type: DisplayType | None = field(
+        default=None,
+        metadata=field_options(alias="type"),
+    )
 
 
-class Wifi(BaseModel):
+@dataclass
+class Wifi(DataClassORJSONMixin):
     """Object holding the Wi-Fi state of an LaMetric device."""
 
     active: bool
     mac: str
     available: bool
-    encryption: str | None = None
     ssid: str
     ip: IPv4Address
     mode: WifiMode
     netmask: str
+    encryption: str | None = None
     rssi: int | None = None
 
 
-class Device(BaseModel):
+@dataclass
+class Device(DataClassORJSONMixin):
     """Object holding the state of an LaMetric device."""
 
-    device_id: str = Field(alias="id")
+    device_id: str = field(metadata=field_options(alias="id"))
     name: str
     serial_number: str
     os_version: AwesomeVersion
@@ -95,25 +109,28 @@ class Device(BaseModel):
     wifi: Wifi
 
 
-class Chart(BaseModel):
+@dataclass
+class Chart(DataClassORJSONMixin):
     """Object holding the chart frame of an LaMetric notification."""
 
-    data: list[int] = Field(alias="chartData")
+    data: list[int] = field(metadata=field_options(alias="chartData"))
 
-    class Config:
+    class Config(BaseConfig):
         """Chart model configuration."""
 
-        allow_population_by_field_name = True
+        allow_deserialization_not_by_alias = True
 
 
-class Simple(BaseModel):
+@dataclass
+class Simple(DataClassORJSONMixin):
     """Object holding the simple frame of an LaMetric notification."""
 
-    icon: int | str | None = None
     text: str
+    icon: int | str | None = None
 
 
-class GoalData(BaseModel):
+@dataclass
+class GoalData(DataClassORJSONMixin):
     """Object holding the goal data of an LaMetric notification."""
 
     current: int
@@ -122,28 +139,29 @@ class GoalData(BaseModel):
     unit: str | None = None
 
 
-class Goal(BaseModel):
+@dataclass
+class Goal(DataClassORJSONMixin):
     """Object holding the goal frame of an LaMetric notification."""
 
+    data: GoalData = field(metadata=field_options(alias="goalData"))
     icon: int | str | None = None
-    data: GoalData = Field(..., alias="goalData")
 
-    class Config:
+    class Config(BaseConfig):
         """Goal model configuration."""
 
-        allow_population_by_field_name = True
+        allow_deserialization_not_by_alias = True
 
 
-class Sound(BaseModel):
+@dataclass
+class Sound(DataClassORJSONMixin):
     """Object holding the notification sound state of an LaMetric device."""
 
-    category: NotificationSoundCategory | None
-    sound: AlarmSound | NotificationSound = Field(..., alias="id")
+    sound: AlarmSound | NotificationSound = field(metadata=field_options(alias="id"))
     repeat: int = 1
+    category: NotificationSoundCategory | None = None
 
-    @root_validator
     @classmethod
-    def infer_category(cls, values: dict[str, Any]) -> dict[str, Any]:
+    def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
         """Infer the category of the sound.
 
         Args:
@@ -153,25 +171,27 @@ class Sound(BaseModel):
         Returns:
         -------
             The values of the model, with the category field inferred.
+
         """
-        if values["category"] is not None:
-            return values
+        if d["category"] is not None:
+            return d
 
-        if values["sound"] in AlarmSound:
-            values["category"] = NotificationSoundCategory.ALARMS
+        if d["sound"] in AlarmSound:
+            d["category"] = NotificationSoundCategory.ALARMS
 
-        if values["sound"] in NotificationSound:
-            values["category"] = NotificationSoundCategory.NOTIFICATIONS
+        if d["sound"] in NotificationSound:
+            d["category"] = NotificationSoundCategory.NOTIFICATIONS
 
-        return values
+        return d
 
-    class Config:
+    class Config(BaseConfig):
         """Sound model configuration."""
 
-        allow_population_by_field_name = True
+        allow_deserialization_not_by_alias = True
 
 
-class Model(BaseModel):
+@dataclass
+class Model(DataClassORJSONMixin):
     """Object holding the notification model of an LaMetric device."""
 
     frames: list[Chart | Goal | Simple]
@@ -179,7 +199,8 @@ class Model(BaseModel):
     cycles: int = 1
 
 
-class Notification(BaseModel):
+@dataclass
+class Notification(DataClassORJSONMixin):
     """Object holding a LaMetric notification."""
 
     model: Model
@@ -188,11 +209,18 @@ class Notification(BaseModel):
     icon_type: NotificationIconType | None = None
     life_time: float | None = None
     priority: NotificationPriority | None = None
-    notification_id: int | None = Field(None, alias="id")
-    notification_type: NotificationType | None = Field(None, alias="type")
+    notification_id: int | None = field(
+        default=None,
+        metadata=field_options(alias="id"),
+    )
+    notification_type: NotificationType | None = field(
+        default=None,
+        metadata=field_options(alias="type"),
+    )
 
 
-class User(BaseModel):
+@dataclass
+class User(DataClassORJSONMixin):
     """Object holding LaMetric User information."""
 
     apps_count: int
@@ -200,19 +228,20 @@ class User(BaseModel):
     name: str
     private_apps_count: int
     private_device_count: int
-    user_id: int = Field(alias="id")
+    user_id: int = field(metadata=field_options(alias="id"))
 
 
-class CloudDevice(BaseModel):
+@dataclass
+class CloudDevice(DataClassORJSONMixin):
     """Object holding the state of an LaMetric device from the Cloud."""
 
-    device_id: int = Field(alias="id")
+    device_id: int = field(metadata=field_options(alias="id"))
     name: str
     state: DeviceState
     serial_number: str
     api_key: str
-    ip: IPv4Address = Field(alias="ipv4_internal")
+    ip: IPv4Address = field(metadata=field_options(alias="ipv4_internal"))
     mac: str
-    ssid: str = Field(alias="wifi_ssid")
+    ssid: str = field(metadata=field_options(alias="wifi_ssid"))
     created_at: datetime
     updated_at: datetime

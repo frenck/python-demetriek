@@ -1,16 +1,16 @@
 """Asynchronous Python client for LaMetric TIME devices."""
+
 from __future__ import annotations
 
 import asyncio
+import asyncio.timeouts
 import socket
 from dataclasses import dataclass
 from typing import Any, Self
 
 import aiohttp
-import async_timeout
 import backoff
 from aiohttp import hdrs
-from pydantic import parse_obj_as
 from yarl import URL
 
 from .exceptions import (
@@ -62,6 +62,7 @@ class LaMetricCloud:
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
                 with the LaMetric device.
             LaMetricError: Received an unexpected response from the LaMetric device.
+
         """
         url = URL.build(scheme="https", host="developer.lametric.com", path=uri)
 
@@ -75,7 +76,7 @@ class LaMetricCloud:
         }
 
         try:
-            async with async_timeout.timeout(self.request_timeout):
+            async with asyncio.timeouts.timeout(self.request_timeout):
                 response = await self.session.request(
                     hdrs.METH_GET,
                     url,
@@ -104,9 +105,10 @@ class LaMetricCloud:
         Returns
         -------
             A User object, with information about the current user.
+
         """
         response = await self._request("/api/v2/me")
-        return User.parse_obj(response)
+        return User.from_dict(response)
 
     async def devices(self) -> list[CloudDevice]:
         """Get LaMetric devices from the cloud.
@@ -114,9 +116,10 @@ class LaMetricCloud:
         Returns
         -------
             A list of CloudDevices.
+
         """
         response = await self._request("/api/v2/users/me/devices")
-        return parse_obj_as(list[CloudDevice], response)
+        return [CloudDevice.from_dict(cloud_device) for cloud_device in response]
 
     async def device(self, device_id: int) -> CloudDevice:
         """Get a LaMetric device from the cloud.
@@ -128,9 +131,10 @@ class LaMetricCloud:
         Returns:
         -------
             A CloudDevice object, with information about the request device.
+
         """
         response = await self._request(f"/api/v2/users/me/devices/{device_id}")
-        return CloudDevice.parse_obj(response)
+        return CloudDevice.from_dict(response)
 
     async def close(self) -> None:
         """Close open client session."""
@@ -143,6 +147,7 @@ class LaMetricCloud:
         Returns
         -------
             The LaMetricCloud object.
+
         """
         return self
 
@@ -152,5 +157,6 @@ class LaMetricCloud:
         Args:
         ----
             _exc_info: Exec type.
+
         """
         await self.close()

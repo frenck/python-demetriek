@@ -73,6 +73,7 @@ class LaMetricDevice:
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
                 with the LaMetric device.
             LaMetricError: Received an unexpected response from the LaMetric device.
+
         """
         url = URL.build(scheme="https", host=self.host, port=4343, path=uri)
 
@@ -128,6 +129,7 @@ class LaMetricDevice:
         Returns
         -------
             A Device object, with information about the LaMetric device.
+
         """
         response = await self._request("/api/v2/device")
 
@@ -158,6 +160,7 @@ class LaMetricDevice:
         -------
             A Display object, with latest or updated information about
             the display of the LaMetric device.
+
         """
         data: dict[str, int | BrightnessMode | dict[str, bool]] = {}
 
@@ -192,6 +195,7 @@ class LaMetricDevice:
         -------
             An Audio object, with latest or updated information about the
             audio state of the LaMetric device.
+
         """
         data: dict[str, int] = {}
 
@@ -219,6 +223,7 @@ class LaMetricDevice:
         Returns:
         -------
             A Bluetooth object, with the latest or updated Bluetooth information.
+
         """
         data: dict[str, int] = {}
 
@@ -243,6 +248,7 @@ class LaMetricDevice:
         Returns
         -------
             A Wifi object with the latest Wi-Fi state of the device.
+
         """
         data = await self._request("/api/v2/device/wifi")
         data.update(ip=data.get("ipv4"), rssi=data.get("signal_strength"))
@@ -276,6 +282,7 @@ class LaMetricDevice:
         Returns:
         -------
             The ID of the notification.
+
         """
         response = await self._request(
             "/api/v2/device/notifications",
@@ -295,6 +302,7 @@ class LaMetricDevice:
         Args:
         ----
             notification_id: Notification ID to dismiss.
+
         """
         await self._request(
             f"/api/v2/device/notifications/{notification_id}",
@@ -329,6 +337,7 @@ class LaMetricDevice:
         Returns
         -------
             A Notification objects.
+
         """
         if data := await self._request("/api/v2/device/notifications/current"):
             return parse_obj_as(Notification, data)
@@ -342,6 +351,7 @@ class LaMetricDevice:
         Returns
         -------
             A list of Notification objects.
+
         """
         data = await self._request("/api/v2/device/notifications")
         return parse_obj_as(list[Notification], data)
@@ -357,6 +367,7 @@ class LaMetricDevice:
         Returns
         -------
             The LaMetricDevice object.
+
         """
         return self
 
@@ -366,5 +377,6 @@ class LaMetricDevice:
         Args:
         ----
             _exc_info: Exec type.
+
         """
         await self.close()

@@ -1,4 +1,5 @@
 """Asynchronous Python client for LaMetric TIME devices."""
+
 from pathlib import Path
 
 

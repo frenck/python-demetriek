@@ -1,4 +1,5 @@
 """Asynchronous Python client for LaMetric TIME devices."""
+
 from .cloud import LaMetricCloud
 from .const import (
     AlarmSound,
@@ -52,8 +53,8 @@ __all__ = [
     "DisplayType",
     "Goal",
     "GoalData",
-    "LaMetricCloud",
     "LaMetricAuthenticationError",
+    "LaMetricCloud",
     "LaMetricConnectionError",
     "LaMetricConnectionTimeoutError",
     "LaMetricDevice",

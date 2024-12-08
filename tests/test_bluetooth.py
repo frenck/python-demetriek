@@ -1,4 +1,5 @@
 """Asynchronous Python client for LaMetric TIME devices."""
+
 # pylint: disable=protected-access
 import aiohttp
 from aresponses import Response, ResponsesMockServer

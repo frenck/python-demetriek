@@ -1,4 +1,5 @@
 """Asynchronous Python client for LaMetric TIME devices."""
+
 from __future__ import annotations
 
 import asyncio

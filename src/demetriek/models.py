@@ -153,6 +153,7 @@ class Sound(BaseModel):
         Returns:
         -------
             The values of the model, with the category field inferred.
+
         """
         if values["category"] is not None:
             return values

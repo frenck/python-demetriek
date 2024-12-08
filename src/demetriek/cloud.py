@@ -62,6 +62,7 @@ class LaMetricCloud:
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
                 with the LaMetric device.
             LaMetricError: Received an unexpected response from the LaMetric device.
+
         """
         url = URL.build(scheme="https", host="developer.lametric.com", path=uri)
 
@@ -104,6 +105,7 @@ class LaMetricCloud:
         Returns
         -------
             A User object, with information about the current user.
+
         """
         response = await self._request("/api/v2/me")
         return User.parse_obj(response)
@@ -114,6 +116,7 @@ class LaMetricCloud:
         Returns
         -------
             A list of CloudDevices.
+
         """
         response = await self._request("/api/v2/users/me/devices")
         return parse_obj_as(list[CloudDevice], response)
@@ -128,6 +131,7 @@ class LaMetricCloud:
         Returns:
         -------
             A CloudDevice object, with information about the request device.
+
         """
         response = await self._request(f"/api/v2/users/me/devices/{device_id}")
         return CloudDevice.parse_obj(response)
@@ -143,6 +147,7 @@ class LaMetricCloud:
         Returns
         -------
             The LaMetricCloud object.
+
         """
         return self
 
@@ -152,5 +157,6 @@ class LaMetricCloud:
         Args:
         ----
             _exc_info: Exec type.
+
         """
         await self.close()

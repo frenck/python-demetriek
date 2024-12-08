@@ -17,9 +17,7 @@ keywords = ["lamtric", "api", "async", "client"]
 license = "MIT"
 maintainers = ["Franck Nijhof <opensource@frenck.dev>"]
 name = "demetriek"
-packages = [
-  {include = "demetriek", from = "src"},
-]
+packages = [{ include = "demetriek", from = "src" }]
 readme = "README.md"
 repository = "https://github.com/frenck/python-demetriek"
 version = "0.0.0"
@@ -42,7 +40,7 @@ black = "23.12.1"
 blacken-docs = "1.19.1"
 codespell = "2.3.0"
 covdefaults = "2.3.0"
-coverage = {version = "7.6.4", extras = ["toml"]}
+coverage = { version = "7.6.4", extras = ["toml"] }
 mypy = "1.13.0"
 pre-commit = "3.7.1"
 pre-commit-hooks = "4.6.0"
@@ -51,7 +49,6 @@ pytest = "8.1.1"
 pytest-asyncio = "0.23.8"
 pytest-cov = "4.1.0"
 ruff = "0.7.0"
-safety = "3.2.10"
 yamllint = "1.35.1"
 
 [tool.coverage.run]
@@ -98,27 +95,11 @@ warn_unused_configs = true
 warn_unused_ignores = true
 
 [tool.pylint.MASTER]
-extension-pkg-whitelist = [
-  "pydantic",
-]
-ignore = [
-  "tests",
-]
+extension-pkg-whitelist = ["pydantic"]
+ignore = ["tests"]
 
 [tool.pylint.BASIC]
-good-names = [
-  "_",
-  "ex",
-  "fp",
-  "i",
-  "id",
-  "j",
-  "k",
-  "on",
-  "Run",
-  "T",
-  "wv",
-]
+good-names = ["_", "ex", "fp", "i", "id", "j", "k", "on", "Run", "T", "wv"]
 
 [tool.pylint."MESSAGES CONTROL"]
 disable = [
@@ -143,12 +124,12 @@ asyncio_mode = "auto"
 
 [tool.ruff]
 ignore = [
-  "ANN101", # Self... explanatory
-  "ANN102", # cls... just as annoying as ANN101
-  "ANN401", # Opinioated warning on disallowing dynamically typed expressions
-  "D203", # Conflicts with other rules
-  "D213", # Conflicts with other rules
-  "D417", # False positives in some occasions
+  "ANN101",  # Self... explanatory
+  "ANN102",  # cls... just as annoying as ANN101
+  "ANN401",  # Opinioated warning on disallowing dynamically typed expressions
+  "D203",    # Conflicts with other rules
+  "D213",    # Conflicts with other rules
+  "D417",    # False positives in some occasions
   "PLR2004", # Just annoying, not really useful
 ]
 select = ["ALL"]

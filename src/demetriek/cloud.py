@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import Any, Self
 
 import aiohttp
-import async_timeout
 import backoff
 from aiohttp import hdrs
 from pydantic import parse_obj_as
@@ -76,7 +75,7 @@ class LaMetricCloud:
         }
 
         try:
-            async with async_timeout.timeout(self.request_timeout):
+            async with asyncio.timeout(self.request_timeout):
                 response = await self.session.request(
                     hdrs.METH_GET,
                     url,

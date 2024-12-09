@@ -63,7 +63,7 @@ class DisplayScreensaver(DataClassORJSONMixin):
     enabled: bool
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Display(DataClassORJSONMixin):
     """Object holding the display state of an LaMetric device."""
 
@@ -71,25 +71,24 @@ class Display(DataClassORJSONMixin):
     brightness_mode: BrightnessMode
     width: int
     height: int
-    screensaver: DisplayScreensaver
     display_type: DisplayType | None = field(
-        default=None,
-        metadata=field_options(alias="type"),
+        default=None, metadata=field_options(alias="type")
     )
+    screensaver: DisplayScreensaver
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Wifi(DataClassORJSONMixin):
     """Object holding the Wi-Fi state of an LaMetric device."""
 
     active: bool
     mac: str
     available: bool
+    encryption: str | None = None
     ssid: str
     ip: IPv4Address
     mode: WifiMode
     netmask: str
-    encryption: str | None = None
     rssi: int | None = None
 
 
@@ -118,15 +117,16 @@ class Chart(DataClassORJSONMixin):
     class Config(BaseConfig):
         """Chart model configuration."""
 
+        serialize_by_alias = True
         allow_deserialization_not_by_alias = True
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Simple(DataClassORJSONMixin):
     """Object holding the simple frame of an LaMetric notification."""
 
-    text: str
     icon: int | str | None = None
+    text: str
 
 
 @dataclass
@@ -139,26 +139,27 @@ class GoalData(DataClassORJSONMixin):
     unit: str | None = None
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Goal(DataClassORJSONMixin):
     """Object holding the goal frame of an LaMetric notification."""
 
-    data: GoalData = field(metadata=field_options(alias="goalData"))
     icon: int | str | None = None
+    data: GoalData = field(metadata=field_options(alias="goalData"))
 
     class Config(BaseConfig):
         """Goal model configuration."""
 
+        serialize_by_alias = True
         allow_deserialization_not_by_alias = True
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Sound(DataClassORJSONMixin):
     """Object holding the notification sound state of an LaMetric device."""
 
+    category: NotificationSoundCategory | None = None
     sound: AlarmSound | NotificationSound = field(metadata=field_options(alias="id"))
     repeat: int = 1
-    category: NotificationSoundCategory | None = None
 
     @classmethod
     def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
@@ -187,6 +188,7 @@ class Sound(DataClassORJSONMixin):
     class Config(BaseConfig):
         """Sound model configuration."""
 
+        serialize_by_alias = True
         allow_deserialization_not_by_alias = True
 
 
@@ -218,8 +220,14 @@ class Notification(DataClassORJSONMixin):
         metadata=field_options(alias="type"),
     )
 
+    class Config(BaseConfig):
+        """Notification model configuration."""
 
-@dataclass
+        serialize_by_alias = True
+        omit_none = True
+
+
+@dataclass(kw_only=True)
 class User(DataClassORJSONMixin):
     """Object holding LaMetric User information."""
 

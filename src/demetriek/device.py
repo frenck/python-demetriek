@@ -285,10 +285,7 @@ class LaMetricDevice:
         response = await self._request(
             "/api/v2/device/notifications",
             method=hdrs.METH_POST,
-            data=notification.to_dict(
-                by_alias=True,
-                exclude_none=True,
-            ),
+            data=notification.to_dict(),
         )
         return cast(int, response["success"]["id"])
 

@@ -7,6 +7,7 @@ classifiers = [
   "Natural Language :: English",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
@@ -143,7 +144,9 @@ mark-parentheses = false
 known-first-party = ["demetriek"]
 
 [tool.ruff.lint.flake8-type-checking]
-runtime-evaluated-base-classes = ["mashumaro.mixins.orjson.DataClassORJSONMixin"]
+runtime-evaluated-base-classes = [
+  "mashumaro.mixins.orjson.DataClassORJSONMixin",
+]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 25

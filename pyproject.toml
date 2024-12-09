@@ -26,7 +26,8 @@ version = "0.0.0"
 aiohttp = ">=3.0.0"
 awesomeversion = ">=21.10.1"
 backoff = ">=2.2.0"
-pydantic = "^1.9.0"
+mashumaro = ">=3.10"
+orjson = ">=3.9.8"
 python = "^3.11"
 yarl = ">=1.6.0"
 
@@ -62,7 +63,7 @@ show_missing = true
 # free to run mypy on Windows, Linux, or macOS and get consistent
 # results.
 platform = "linux"
-plugins = ["pydantic.mypy"]
+plugins = []
 python_version = "3.11"
 
 # flake8-mypy expects the two following for sensible formatting
@@ -93,7 +94,6 @@ warn_unused_configs = true
 warn_unused_ignores = true
 
 [tool.pylint.MASTER]
-extension-pkg-whitelist = ["pydantic"]
 ignore = ["tests"]
 
 [tool.pylint.BASIC]
@@ -141,6 +141,9 @@ mark-parentheses = false
 
 [tool.ruff.lint.isort]
 known-first-party = ["demetriek"]
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["mashumaro.mixins.orjson.DataClassORJSONMixin"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 25

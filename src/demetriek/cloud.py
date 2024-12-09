@@ -10,7 +10,6 @@ from typing import Any, Self
 import aiohttp
 import backoff
 from aiohttp import hdrs
-from pydantic import parse_obj_as
 from yarl import URL
 
 from .exceptions import (
@@ -108,7 +107,7 @@ class LaMetricCloud:
 
         """
         response = await self._request("/api/v2/me")
-        return User.parse_obj(response)
+        return User.from_dict(response)
 
     async def devices(self) -> list[CloudDevice]:
         """Get LaMetric devices from the cloud.
@@ -119,7 +118,7 @@ class LaMetricCloud:
 
         """
         response = await self._request("/api/v2/users/me/devices")
-        return parse_obj_as(list[CloudDevice], response)
+        return [CloudDevice.from_dict(cloud_device) for cloud_device in response]
 
     async def device(self, device_id: int) -> CloudDevice:
         """Get a LaMetric device from the cloud.
@@ -134,7 +133,7 @@ class LaMetricCloud:
 
         """
         response = await self._request(f"/api/v2/users/me/devices/{device_id}")
-        return CloudDevice.parse_obj(response)
+        return CloudDevice.from_dict(response)
 
     async def close(self) -> None:
         """Close open client session."""

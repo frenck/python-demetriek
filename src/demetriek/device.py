@@ -11,7 +11,6 @@ import aiohttp
 import backoff
 from aiohttp import hdrs
 from aiohttp.helpers import BasicAuth
-from pydantic import parse_obj_as
 from yarl import URL
 
 from .exceptions import (
@@ -138,8 +137,7 @@ class LaMetricDevice:
             ssid=response["wifi"].get("essid"),
             rssi=response["wifi"].get("strength"),
         )
-
-        return Device.parse_obj(response)
+        return Device.from_dict(response)
 
     async def display(
         self,
@@ -179,10 +177,10 @@ class LaMetricDevice:
                 method=hdrs.METH_PUT,
                 data=data,
             )
-            return Display.parse_obj(response["success"]["data"])
+            return Display.from_dict(response["success"]["data"])
 
         response = await self._request("/api/v2/device/display")
-        return Display.parse_obj(response)
+        return Display.from_dict(response)
 
     async def audio(self, *, volume: int | None = None) -> Audio:
         """Get or set LaMetric device audio information.
@@ -208,10 +206,10 @@ class LaMetricDevice:
                 method=hdrs.METH_PUT,
                 data=data,
             )
-            return Audio.parse_obj(response["success"]["data"])
+            return Audio.from_dict(response["success"]["data"])
 
         data = await self._request("/api/v2/device/audio")
-        return Audio.parse_obj(data)
+        return Audio.from_dict(data)
 
     async def bluetooth(self, *, active: bool | None = None) -> Bluetooth:
         """Get LaMetric device bluetooth information.
@@ -240,7 +238,7 @@ class LaMetricDevice:
         else:
             response = await self._request("/api/v2/device/bluetooth")
         response.update(address=response.get("mac"))
-        return Bluetooth.parse_obj(response)
+        return Bluetooth.from_dict(response)
 
     async def wifi(self) -> Wifi:
         """Get LaMetric device bluetooth information.
@@ -252,7 +250,7 @@ class LaMetricDevice:
         """
         data = await self._request("/api/v2/device/wifi")
         data.update(ip=data.get("ipv4"), rssi=data.get("signal_strength"))
-        return Wifi.parse_obj(data)
+        return Wifi.from_dict(data)
 
     async def app_next(self) -> None:
         """Switch to the next app on LaMetric Time.
@@ -287,10 +285,7 @@ class LaMetricDevice:
         response = await self._request(
             "/api/v2/device/notifications",
             method=hdrs.METH_POST,
-            data=notification.dict(
-                by_alias=True,
-                exclude_none=True,
-            ),
+            data=notification.to_dict(),
         )
         return cast(int, response["success"]["id"])
 
@@ -340,7 +335,7 @@ class LaMetricDevice:
 
         """
         if data := await self._request("/api/v2/device/notifications/current"):
-            return parse_obj_as(Notification, data)
+            return Notification.from_dict(data)
         return None
 
     async def notification_queue(self) -> list[Notification]:
@@ -354,7 +349,7 @@ class LaMetricDevice:
 
         """
         data = await self._request("/api/v2/device/notifications")
-        return parse_obj_as(list[Notification], data)
+        return [Notification.from_dict(notification) for notification in data]
 
     async def close(self) -> None:
         """Close open client session."""

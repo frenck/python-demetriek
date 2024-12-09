@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import asyncio.timeouts
 import socket
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Self, cast
@@ -82,7 +81,7 @@ class LaMetricDevice:
             self._close_session = True
 
         try:
-            async with asyncio.timeouts.timeout(self.request_timeout):
+            async with asyncio.timeout(self.request_timeout):
                 response = await self.session.request(
                     method,
                     url,

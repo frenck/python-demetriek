@@ -176,6 +176,7 @@ async def test_notify(aresponses: ResponsesMockServer) -> None:
     assert request["icon_type"] == "alert"
     assert "life_time" not in request
     assert request["model"]["sound"]["id"] == "win"
+    assert request["model"]["sound"]["category"] == "notifications"
     assert request["model"]["frames"][0]["text"] == "Yeah"
     assert request["model"]["frames"][1]["goalData"]["current"] == 65
     assert request["model"]["frames"][2]["chartData"] == [1, 2, 3, 4, 5, 4, 3, 2, 1]

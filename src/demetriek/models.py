@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from ipaddress import IPv4Address
-from typing import Any
 
 from awesomeversion import AwesomeVersion
 from mashumaro import field_options
@@ -161,29 +160,16 @@ class Sound(DataClassORJSONMixin):
     sound: AlarmSound | NotificationSound = field(metadata=field_options(alias="id"))
     repeat: int = 1
 
-    @classmethod
-    def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
-        """Infer the category of the sound.
+    def __post_init__(self) -> None:
+        """Infer the category of the sound."""
+        if self.category is not None:
+            return
 
-        Args:
-        ----
-            values: The values of the model.
+        if self.sound in AlarmSound:
+            self.category = NotificationSoundCategory.ALARMS
 
-        Returns:
-        -------
-            The values of the model, with the category field inferred.
-
-        """
-        if d["category"] is not None:
-            return d
-
-        if d["sound"] in AlarmSound:
-            d["category"] = NotificationSoundCategory.ALARMS
-
-        if d["sound"] in NotificationSound:
-            d["category"] = NotificationSoundCategory.NOTIFICATIONS
-
-        return d
+        if self.sound in NotificationSound:
+            self.category = NotificationSoundCategory.NOTIFICATIONS
 
     class Config(BaseConfig):
         """Sound model configuration."""

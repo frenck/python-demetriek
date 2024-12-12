@@ -1,12 +1,30 @@
 """Asynchronous Python client for LaMetric TIME devices."""
+
 # pylint: disable=protected-access
 from ipaddress import IPv4Address
 
 import aiohttp
 from aresponses import ResponsesMockServer
 
-from demetriek import LaMetricDevice
-from demetriek.const import BrightnessMode, DeviceMode, DisplayType, WifiMode
+from demetriek import (
+    Chart,
+    Goal,
+    GoalData,
+    LaMetricDevice,
+    Model,
+    Notification,
+    NotificationIconType,
+    NotificationSound,
+    Simple,
+    Sound,
+)
+from demetriek.const import (
+    BrightnessMode,
+    DeviceMode,
+    DisplayType,
+    NotificationType,
+    WifiMode,
+)
 
 from . import load_fixture
 
@@ -112,3 +130,53 @@ async def test_get_device2(aresponses: ResponsesMockServer) -> None:
     assert device.wifi.mode is WifiMode.DHCP
     assert device.wifi.netmask == "255.255.255.0"
     assert device.wifi.rssi is None
+
+
+async def test_notify(aresponses: ResponsesMockServer) -> None:
+    """Test sending notification serialization."""
+    aresponses.add(
+        "127.0.0.2:4343",
+        "/api/v2/device/notifications",
+        "POST",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("notification.json"),
+        ),
+    )
+    async with aiohttp.ClientSession() as session:
+        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
+        notification = Notification(
+            icon_type=NotificationIconType.ALERT,
+            notification_type=NotificationType.EXTERNAL,
+            model=Model(
+                frames=[
+                    Simple(text="Yeah", icon=18815),
+                    Goal(
+                        icon=7956,
+                        data=GoalData(
+                            current=65,
+                            end=100,
+                            start=0,
+                            unit="%",
+                        ),
+                    ),
+                    Chart(data=[1, 2, 3, 4, 5, 4, 3, 2, 1]),
+                ],
+                sound=Sound(sound=NotificationSound.WIN),
+            ),
+        )
+        response = await demetriek.notify(notification=notification)
+
+    # check response
+    assert response == 1
+    # check on serialized request if aliases are used and null values are removed
+    request = await aresponses.history[0].request.json()
+    assert request["type"] == "external"
+    assert request["icon_type"] == "alert"
+    assert "life_time" not in request
+    assert request["model"]["sound"]["id"] == "win"
+    assert request["model"]["sound"]["category"] == "notifications"
+    assert request["model"]["frames"][0]["text"] == "Yeah"
+    assert request["model"]["frames"][1]["goalData"]["current"] == 65
+    assert request["model"]["frames"][2]["chartData"] == [1, 2, 3, 4, 5, 4, 3, 2, 1]

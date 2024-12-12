@@ -1,17 +1,16 @@
 """Asynchronous Python client for LaMetric TIME devices."""
+
 from __future__ import annotations
 
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Self, cast
 
 import aiohttp
-import async_timeout
 import backoff
 from aiohttp import hdrs
 from aiohttp.helpers import BasicAuth
-from pydantic import parse_obj_as
 from yarl import URL
 
 from .exceptions import (
@@ -73,6 +72,7 @@ class LaMetricDevice:
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
                 with the LaMetric device.
             LaMetricError: Received an unexpected response from the LaMetric device.
+
         """
         url = URL.build(scheme="https", host=self.host, port=4343, path=uri)
 
@@ -81,7 +81,7 @@ class LaMetricDevice:
             self._close_session = True
 
         try:
-            async with async_timeout.timeout(self.request_timeout):
+            async with asyncio.timeout(self.request_timeout):
                 response = await self.session.request(
                     method,
                     url,
@@ -94,7 +94,7 @@ class LaMetricDevice:
 
             content_type = response.headers.get("Content-Type", "")
             if "application/json" not in content_type:
-                raise LaMetricError(  # noqa: TRY301
+                raise LaMetricError(
                     response.status,
                     {"message": await response.text()},
                 )
@@ -128,6 +128,7 @@ class LaMetricDevice:
         Returns
         -------
             A Device object, with information about the LaMetric device.
+
         """
         response = await self._request("/api/v2/device")
 
@@ -136,8 +137,7 @@ class LaMetricDevice:
             ssid=response["wifi"].get("essid"),
             rssi=response["wifi"].get("strength"),
         )
-
-        return Device.parse_obj(response)
+        return Device.from_dict(response)
 
     async def display(
         self,
@@ -160,6 +160,7 @@ class LaMetricDevice:
         -------
             A Display object, with latest or updated information about
             the display of the LaMetric device.
+
         """
         data: dict[str, int | BrightnessMode | dict[str, bool]] = {}
 
@@ -181,10 +182,10 @@ class LaMetricDevice:
                 method=hdrs.METH_PUT,
                 data=data,
             )
-            return Display.parse_obj(response["success"]["data"])
+            return Display.from_dict(response["success"]["data"])
 
         response = await self._request("/api/v2/device/display")
-        return Display.parse_obj(response)
+        return Display.from_dict(response)
 
     async def audio(self, *, volume: int | None = None) -> Audio:
         """Get or set LaMetric device audio information.
@@ -197,6 +198,7 @@ class LaMetricDevice:
         -------
             An Audio object, with latest or updated information about the
             audio state of the LaMetric device.
+
         """
         data: dict[str, int] = {}
 
@@ -209,10 +211,10 @@ class LaMetricDevice:
                 method=hdrs.METH_PUT,
                 data=data,
             )
-            return Audio.parse_obj(response["success"]["data"])
+            return Audio.from_dict(response["success"]["data"])
 
         data = await self._request("/api/v2/device/audio")
-        return Audio.parse_obj(data)
+        return Audio.from_dict(data)
 
     async def bluetooth(self, *, active: bool | None = None) -> Bluetooth:
         """Get LaMetric device bluetooth information.
@@ -224,6 +226,7 @@ class LaMetricDevice:
         Returns:
         -------
             A Bluetooth object, with the latest or updated Bluetooth information.
+
         """
         data: dict[str, int] = {}
 
@@ -240,7 +243,7 @@ class LaMetricDevice:
         else:
             response = await self._request("/api/v2/device/bluetooth")
         response.update(address=response.get("mac"))
-        return Bluetooth.parse_obj(response)
+        return Bluetooth.from_dict(response)
 
     async def wifi(self) -> Wifi:
         """Get LaMetric device bluetooth information.
@@ -248,10 +251,11 @@ class LaMetricDevice:
         Returns
         -------
             A Wifi object with the latest Wi-Fi state of the device.
+
         """
         data = await self._request("/api/v2/device/wifi")
         data.update(ip=data.get("ipv4"), rssi=data.get("signal_strength"))
-        return Wifi.parse_obj(data)
+        return Wifi.from_dict(data)
 
     async def app_next(self) -> None:
         """Switch to the next app on LaMetric Time.
@@ -281,14 +285,12 @@ class LaMetricDevice:
         Returns:
         -------
             The ID of the notification.
+
         """
         response = await self._request(
             "/api/v2/device/notifications",
             method=hdrs.METH_POST,
-            data=notification.dict(
-                by_alias=True,
-                exclude_none=True,
-            ),
+            data=notification.to_dict(),
         )
         return cast(int, response["success"]["id"])
 
@@ -300,6 +302,7 @@ class LaMetricDevice:
         Args:
         ----
             notification_id: Notification ID to dismiss.
+
         """
         await self._request(
             f"/api/v2/device/notifications/{notification_id}",
@@ -334,9 +337,10 @@ class LaMetricDevice:
         Returns
         -------
             A Notification objects.
+
         """
         if data := await self._request("/api/v2/device/notifications/current"):
-            return parse_obj_as(Notification, data)
+            return Notification.from_dict(data)
         return None
 
     async def notification_queue(self) -> list[Notification]:
@@ -347,29 +351,32 @@ class LaMetricDevice:
         Returns
         -------
             A list of Notification objects.
+
         """
         data = await self._request("/api/v2/device/notifications")
-        return parse_obj_as(list[Notification], data)
+        return [Notification.from_dict(notification) for notification in data]
 
     async def close(self) -> None:
         """Close open client session."""
         if self.session and self._close_session:
             await self.session.close()
 
-    async def __aenter__(self) -> LaMetricDevice:
+    async def __aenter__(self) -> Self:
         """Async enter.
 
         Returns
         -------
             The LaMetricDevice object.
+
         """
         return self
 
-    async def __aexit__(self, *_exc_info: Any) -> None:
+    async def __aexit__(self, *_exc_info: object) -> None:
         """Async exit.
 
         Args:
         ----
             _exc_info: Exec type.
+
         """
         await self.close()

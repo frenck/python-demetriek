@@ -25,8 +25,6 @@ from .models import (
     Device,
     Display,
     Notification,
-    SkyDevice,
-    TimeDevice,
     Wifi,
 )
 
@@ -147,10 +145,7 @@ class LaMetricDevice:
             rssi=response["wifi"].get("strength"),
         )
 
-        if response["model"] == "sa5":
-            return SkyDevice.from_dict(response)
-
-        return TimeDevice.from_dict(response)
+        return Device.from_dict(response)
 
     async def display(
         self,

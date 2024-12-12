@@ -96,6 +96,8 @@ class Wifi(DataClassORJSONMixin):
 class Device(DataClassORJSONMixin):
     """Object holding the state of an LaMetric device."""
 
+    audio: Audio | None = None
+    bluetooth: Bluetooth | None = None
     device_id: str = field(metadata=field_options(alias="id"))
     display: Display
     mode: DeviceMode
@@ -104,20 +106,6 @@ class Device(DataClassORJSONMixin):
     os_version: AwesomeVersion
     serial_number: str
     wifi: Wifi
-
-
-@dataclass(kw_only=True)
-class TimeDevice(Device):
-    """Object holding the state of an LaMetric TIME device."""
-
-    audio: Audio
-    bluetooth: Bluetooth
-
-
-@dataclass(kw_only=True)
-class SkyDevice(Device):
-    """Object holding the state of an LaMetric SKY device."""
-
 
 @dataclass(kw_only=True)
 class Chart(DataClassORJSONMixin):

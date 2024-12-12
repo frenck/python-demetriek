@@ -168,6 +168,7 @@ class Goal(DataClassORJSONMixin):
 class Sound(DataClassORJSONMixin):
     """Object holding the notification sound state of an LaMetric device."""
 
+    category: NotificationSoundCategory | None = None
     repeat: int = 1
     sound: AlarmSound | NotificationSound = field(
         default=None,

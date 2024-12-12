@@ -73,7 +73,7 @@ class Display(DataClassORJSONMixin):
     )
     height: int
     on: bool | None = None
-    screensaver: DisplayScreensaver
+    screensaver: DisplayScreensaver | None = None
     width: int
 
 
@@ -96,8 +96,8 @@ class Wifi(DataClassORJSONMixin):
 class Device(DataClassORJSONMixin):
     """Object holding the state of an LaMetric device."""
 
-    audio: Audio
-    bluetooth: Bluetooth
+    audio: Audio | None = None
+    bluetooth: Bluetooth | None = None
     device_id: str = field(metadata=field_options(alias="id"))
     display: Display
     mode: DeviceMode
@@ -180,12 +180,21 @@ class Sound(DataClassORJSONMixin):
 
 
 @dataclass(kw_only=True)
+class SoundURL(DataClassORJSONMixin):
+    """Sound URL model configuration."""
+
+    url: str
+    type: str = "mp3"
+    fallback: Sound | None = None
+
+
+@dataclass(kw_only=True)
 class Model(DataClassORJSONMixin):
     """Object holding the notification model of an LaMetric device."""
 
     cycles: int = 1
     frames: list[Chart | Goal | Simple]
-    sound: Sound | None = None
+    sound: SoundURL | Sound | None
 
 
 @dataclass(kw_only=True)

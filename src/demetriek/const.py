@@ -34,6 +34,7 @@ class DisplayType(str, Enum):
     GRAYSCALE = "grayscale"
     MIXED = "mixed"
     MONOCHROME = "monochrome"
+    FULL_RGB = "full_rgb"
 
 
 class NotificationIconType(str, Enum):

@@ -51,6 +51,7 @@ async def test_get_device(aresponses: ResponsesMockServer) -> None:
     assert device.os_version == "2.2.2"
     assert device.mode is DeviceMode.AUTO
     assert device.model == "LM 37X8"
+    assert device.audio
     assert device.audio.volume == 100
     assert device.audio.volume_range
     assert device.audio.volume_range.range_min == 0
@@ -58,6 +59,7 @@ async def test_get_device(aresponses: ResponsesMockServer) -> None:
     assert device.audio.volume_limit
     assert device.audio.volume_limit.range_min == 0
     assert device.audio.volume_limit.range_max == 100
+    assert device.bluetooth
     assert device.bluetooth.available is True
     assert device.bluetooth.name == "LM1234"
     assert device.bluetooth.active is False
@@ -69,6 +71,7 @@ async def test_get_device(aresponses: ResponsesMockServer) -> None:
     assert device.display.width == 37
     assert device.display.height == 8
     assert device.display.display_type is DisplayType.MIXED
+    assert device.display.screensaver
     assert device.display.screensaver.enabled is False
     assert device.wifi.active is True
     assert device.wifi.available is True
@@ -103,6 +106,7 @@ async def test_get_device2(aresponses: ResponsesMockServer) -> None:
     assert device.os_version == "2.2.2"
     assert device.mode is DeviceMode.SCHEDULE
     assert device.model == "LM 37X8"
+    assert device.audio
     assert device.audio.volume == 100
     assert device.audio.volume_range
     assert device.audio.volume_range.range_min == 0
@@ -110,6 +114,7 @@ async def test_get_device2(aresponses: ResponsesMockServer) -> None:
     assert device.audio.volume_limit
     assert device.audio.volume_limit.range_min == 0
     assert device.audio.volume_limit.range_max == 100
+    assert device.bluetooth
     assert device.bluetooth.available is True
     assert device.bluetooth.name == "LM1234"
     assert device.bluetooth.active is False

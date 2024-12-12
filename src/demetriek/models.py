@@ -107,6 +107,7 @@ class Device(DataClassORJSONMixin):
     serial_number: str
     wifi: Wifi
 
+
 @dataclass(kw_only=True)
 class Chart(DataClassORJSONMixin):
     """Object holding the chart frame of an LaMetric notification."""
@@ -158,10 +159,7 @@ class Sound(DataClassORJSONMixin):
 
     category: NotificationSoundCategory | None = None
     repeat: int = 1
-    sound: AlarmSound | NotificationSound = field(
-        default=None,
-        metadata=field_options(alias="id"),
-    )
+    sound: AlarmSound | NotificationSound = field(metadata=field_options(alias="id"))
 
     def __post_init__(self) -> None:
         """Infer the category of the sound."""

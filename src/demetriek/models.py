@@ -72,6 +72,7 @@ class Display(DataClassORJSONMixin):
         default=None, metadata=field_options(alias="type")
     )
     height: int
+    on: bool | None = None
     screensaver: DisplayScreensaver
     width: int
 

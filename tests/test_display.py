@@ -32,6 +32,7 @@ async def test_get_display(aresponses: ResponsesMockServer) -> None:
     assert display.width == 37
     assert display.height == 8
     assert display.display_type is DisplayType.MIXED
+    assert display.on is True
 
 
 async def test_set_display(aresponses: ResponsesMockServer) -> None:
@@ -46,6 +47,7 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
             "screensaver": {
                 "enabled": False,
             },
+            "on": True,
         }
         return aresponses.Response(
             status=200,
@@ -61,6 +63,7 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
             brightness=99,
             brightness_mode=BrightnessMode.MANUAL,
             screensaver_enabled=False,
+            on=True,
         )
 
     assert display
@@ -70,3 +73,4 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
     assert display.height == 8
     assert display.display_type is DisplayType.MIXED
     assert display.screensaver.enabled is False
+    assert display.on is True

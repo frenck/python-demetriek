@@ -10,6 +10,7 @@
     "min": 0
   },
   "height": 8,
+  "on": true,
   "screensaver": {
     "enabled": false,
     "modes": {

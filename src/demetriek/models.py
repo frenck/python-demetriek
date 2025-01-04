@@ -194,7 +194,10 @@ class Model(DataClassORJSONMixin):
 
     cycles: int = 1
     frames: list[Chart | Goal | Simple]
-    sound: SoundURL | Sound | None
+    sound: SoundURL | Sound | None = None
+
+    class Config(BaseConfig):
+        omit_none = True
 
 
 @dataclass(kw_only=True)

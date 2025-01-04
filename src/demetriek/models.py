@@ -198,6 +198,8 @@ class Model(DataClassORJSONMixin):
     sound: SoundURL | Sound | None = None
 
     class Config(BaseConfig):
+        """Model configuration."""
+
         omit_none = True
 
 

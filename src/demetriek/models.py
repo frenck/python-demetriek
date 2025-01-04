@@ -38,7 +38,8 @@ class Range(DataClassORJSONMixin):
 class Audio(DataClassORJSONMixin):
     """Object holding the audio state of an LaMetric device."""
 
-    volume: int
+    available: bool = True
+    volume: int | None
     volume_limit: Range | None
     volume_range: Range | None
 

@@ -69,6 +69,7 @@ class Display(DataClassORJSONMixin):
 
     brightness: int
     brightness_mode: BrightnessMode
+    brightness_range: Range
     display_type: DisplayType | None = field(
         default=None, metadata=field_options(alias="type")
     )

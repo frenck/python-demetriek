@@ -118,8 +118,7 @@ class LaMetricDevice:
                 msg = f"Authentication to the LaMetric device at {self.host} failed"
                 raise LaMetricAuthenticationError(msg) from exception
             msg = (
-                "Error occurred while connecting to the LaMetric device"
-                f" at {self.host}"
+                f"Error occurred while connecting to the LaMetric device at {self.host}"
             )
             raise LaMetricError(msg) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:

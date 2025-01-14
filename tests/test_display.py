@@ -31,6 +31,9 @@ async def test_get_display(aresponses: ResponsesMockServer) -> None:
     assert display.brightness_limit
     assert display.brightness_limit.range_min == 2
     assert display.brightness_limit.range_max == 100
+    assert display.brightness_range
+    assert display.brightness_range.range_min == 0
+    assert display.brightness_range.range_max == 100
     assert display.brightness_mode is BrightnessMode.AUTO
     assert display.width == 37
     assert display.height == 8

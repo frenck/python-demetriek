@@ -299,7 +299,7 @@ class LaMetricDevice:
             method=hdrs.METH_POST,
             data=notification.to_dict(),
         )
-        return cast(int, response["success"]["id"])
+        return cast("int", response["success"]["id"])
 
     async def dismiss_notification(self, *, notification_id: int) -> None:
         """Remove a notification from the queue.

@@ -31,7 +31,6 @@ mashumaro = ">=3.10"
 orjson = ">=3.9.8"
 python = "^3.11"
 yarl = ">=1.6.0"
-pytest = "^8.4.1"
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/frenck/python-demetriek/issues"

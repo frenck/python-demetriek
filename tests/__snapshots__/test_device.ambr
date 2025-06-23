@@ -1,0 +1,186 @@
+# serializer version: 1
+# name: test_get_device[device.json]
+  dict({
+    'audio': dict({
+      'available': True,
+      'volume': 100,
+      'volume_limit': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'volume_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+    }),
+    'bluetooth': dict({
+      'active': False,
+      'address': 'AA:BB:CC:DD:EE:FF',
+      'available': True,
+      'discoverable': True,
+      'name': 'LM1234',
+      'pairable': True,
+    }),
+    'device_id': '12345',
+    'display': dict({
+      'brightness': 100,
+      'brightness_limit': dict({
+        'range_max': 100,
+        'range_min': 2,
+      }),
+      'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+      'brightness_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'display_type': <DisplayType.MIXED: 'mixed'>,
+      'height': 8,
+      'on': None,
+      'screensaver': dict({
+        'enabled': False,
+      }),
+      'width': 37,
+    }),
+    'mode': <DeviceMode.AUTO: 'auto'>,
+    'model': 'LM 37X8',
+    'name': "Frenck's LaMetric",
+    'os_version': '2.2.2',
+    'serial_number': 'SA110405124500W00BS9',
+    'update': None,
+    'wifi': dict({
+      'active': True,
+      'available': True,
+      'encryption': 'WPA',
+      'ip': IPv4Address('192.168.1.11'),
+      'mac': 'AA:BB:CC:DD:EE:FF',
+      'mode': <WifiMode.DHCP: 'dhcp'>,
+      'netmask': '255.255.255.0',
+      'rssi': 21,
+      'ssid': 'Frenck',
+    }),
+  })
+# ---
+# name: test_get_device[device2.json]
+  dict({
+    'audio': dict({
+      'available': True,
+      'volume': 100,
+      'volume_limit': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'volume_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+    }),
+    'bluetooth': dict({
+      'active': False,
+      'address': 'AA:BB:CC:DD:EE:FF',
+      'available': True,
+      'discoverable': True,
+      'name': 'LM1234',
+      'pairable': True,
+    }),
+    'device_id': '12345',
+    'display': dict({
+      'brightness': 100,
+      'brightness_limit': dict({
+        'range_max': 100,
+        'range_min': 2,
+      }),
+      'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+      'brightness_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'display_type': <DisplayType.MIXED: 'mixed'>,
+      'height': 8,
+      'on': None,
+      'screensaver': dict({
+        'enabled': False,
+      }),
+      'width': 37,
+    }),
+    'mode': <DeviceMode.SCHEDULE: 'schedule'>,
+    'model': 'LM 37X8',
+    'name': "Frenck's LaMetric",
+    'os_version': '2.2.2',
+    'serial_number': 'SA110405124500W00BS9',
+    'update': None,
+    'wifi': dict({
+      'active': True,
+      'available': True,
+      'encryption': None,
+      'ip': IPv4Address('192.168.1.11'),
+      'mac': 'AA:BB:CC:DD:EE:FF',
+      'mode': <WifiMode.DHCP: 'dhcp'>,
+      'netmask': '255.255.255.0',
+      'rssi': None,
+      'ssid': 'Frenck',
+    }),
+  })
+# ---
+# name: test_get_device[device3.json]
+  dict({
+    'audio': dict({
+      'available': True,
+      'volume': 46,
+      'volume_limit': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'volume_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+    }),
+    'bluetooth': dict({
+      'active': False,
+      'address': '40:F4:C9:AA:AA:AA',
+      'available': True,
+      'discoverable': True,
+      'name': 'LM8367',
+      'pairable': False,
+    }),
+    'device_id': '67790',
+    'display': dict({
+      'brightness': 100,
+      'brightness_limit': dict({
+        'range_max': 100,
+        'range_min': 2,
+      }),
+      'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+      'brightness_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'display_type': <DisplayType.MIXED: 'mixed'>,
+      'height': 8,
+      'on': True,
+      'screensaver': dict({
+        'enabled': True,
+      }),
+      'width': 37,
+    }),
+    'mode': <DeviceMode.MANUAL: 'manual'>,
+    'model': 'sa8',
+    'name': 'TIME',
+    'os_version': '3.1.3',
+    'serial_number': 'SASOMETHING',
+    'update': dict({
+      'version': '3.2.1',
+    }),
+    'wifi': dict({
+      'active': True,
+      'available': True,
+      'encryption': 'WPA',
+      'ip': IPv4Address('192.168.0.33'),
+      'mac': '40:F4:C9:AA:AA:AA',
+      'mode': <WifiMode.DHCP: 'dhcp'>,
+      'netmask': '255.255.255.0',
+      'rssi': 78,
+      'ssid': 'NETGEARAA',
+    }),
+  })
+# ---

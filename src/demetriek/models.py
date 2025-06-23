@@ -108,7 +108,17 @@ class Device(DataClassORJSONMixin):
     name: str
     os_version: AwesomeVersion
     serial_number: str
+    update: Update | None = field(
+        metadata=field_options(alias="update_available"), default=None
+    )
     wifi: Wifi
+
+
+@dataclass(kw_only=True)
+class Update(DataClassORJSONMixin):
+    """Object holding the update state of an LaMetric device."""
+
+    version: AwesomeVersion
 
 
 @dataclass(kw_only=True)

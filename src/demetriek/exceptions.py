@@ -15,3 +15,7 @@ class LaMetricAuthenticationError(LaMetricError):
 
 class LaMetricConnectionTimeoutError(LaMetricConnectionError):
     """LaMetric connection Timeout exception."""
+
+
+class LaMetricUnsupportedError(LaMetricError):
+    """LaMetric API feature not supported on this device version."""

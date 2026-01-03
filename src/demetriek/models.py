@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from ipaddress import IPv4Address
+from typing import Any
 
 from awesomeversion import AwesomeVersion
 from mashumaro import field_options
@@ -39,21 +40,21 @@ class Audio(DataClassORJSONMixin):
     """Object holding the audio state of an LaMetric device."""
 
     available: bool = True
-    volume: int | None
-    volume_limit: Range | None
-    volume_range: Range | None
+    volume: int | None = None
+    volume_limit: Range | None = None
+    volume_range: Range | None = None
 
 
 @dataclass(kw_only=True)
 class Bluetooth(DataClassORJSONMixin):
     """Object holding the Bluetooth state of an LaMetric device."""
 
-    active: bool
-    address: str
-    available: bool
-    discoverable: bool
-    name: str
-    pairable: bool
+    active: bool | None = None
+    address: str | None = None
+    available: bool = False
+    discoverable: bool | None = None
+    name: str | None = None
+    pairable: bool | None = None
 
 
 @dataclass(kw_only=True)
@@ -267,3 +268,27 @@ class CloudDevice(DataClassORJSONMixin):
     ssid: str = field(metadata=field_options(alias="wifi_ssid"))
     state: DeviceState
     updated_at: datetime
+
+
+@dataclass(kw_only=True)
+class Widget(DataClassORJSONMixin):
+    """Object holding LaMetric Widget information."""
+
+    index: int
+    package: str
+    settings: dict[str, Any] | None = None
+    visible: bool | None = None
+
+
+@dataclass(kw_only=True)
+class Application(DataClassORJSONMixin):
+    """Object holding LaMetric Application information."""
+
+    actions: dict[str, dict[str, Any]] | None = None
+    package: str
+    title: str | None = None
+    triggers: dict[str, dict[str, Any]] | None = None
+    vendor: str
+    version: str
+    version_code: str
+    widgets: dict[str, Widget] | None = None

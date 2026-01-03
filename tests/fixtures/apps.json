@@ -1,0 +1,48 @@
+{
+  "com.lametric.clock": {
+    "package": "com.lametric.clock",
+    "vendor": "LaMetric",
+    "version": "1.0.17",
+    "version_code": "23",
+    "title": "Clock",
+    "actions": {
+      "clock.alarm": {
+        "id": "clock.alarm",
+        "title": "Alarm",
+        "type": "native"
+      },
+      "clock.clockface": {
+        "id": "clock.clockface",
+        "title": "Clock Face",
+        "type": "native",
+        "params": {
+          "type": {
+            "type": "string",
+            "values": ["weather", "page_a_day", "custom", "none"]
+          }
+        }
+      }
+    },
+    "widgets": {
+      "08b8eac21074f8f7e5a29f2855ba8060": {
+        "index": 0,
+        "package": "com.lametric.clock",
+        "visible": true
+      }
+    }
+  },
+  "com.lametric.radio": {
+    "package": "com.lametric.radio",
+    "vendor": "LaMetric",
+    "version": "1.0.2",
+    "version_code": "8",
+    "title": "Radio",
+    "widgets": {
+      "8a5d6001db1f4040b0eeb50e63f3e8af": {
+        "index": 1,
+        "package": "com.lametric.radio",
+        "visible": true
+      }
+    }
+  }
+}

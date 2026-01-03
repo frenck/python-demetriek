@@ -1,0 +1,31 @@
+# serializer version: 1
+# name: test_app
+  dict({
+    'actions': dict({
+      'clock.alarm': dict({
+        'id': 'clock.alarm',
+        'title': 'Alarm',
+        'type': 'native',
+      }),
+      'clock.clockface': dict({
+        'id': 'clock.clockface',
+        'title': 'Clock Face',
+        'type': 'native',
+      }),
+    }),
+    'package': 'com.lametric.clock',
+    'title': 'Clock',
+    'triggers': None,
+    'vendor': 'LaMetric',
+    'version': '1.0.17',
+    'version_code': '23',
+    'widgets': dict({
+      '08b8eac21074f8f7e5a29f2855ba8060': dict({
+        'index': 0,
+        'package': 'com.lametric.clock',
+        'settings': None,
+        'visible': True,
+      }),
+    }),
+  })
+# ---

@@ -18,13 +18,16 @@ from .exceptions import (
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
+    LaMetricUnsupportedError,
 )
 from .models import (
+    Application,
     Audio,
     Bluetooth,
     Device,
     Display,
     Notification,
+    Widget,
     Wifi,
 )
 
@@ -73,6 +76,8 @@ class LaMetricDevice:
 
         Raises:
         ------
+            LaMetricUnsupportedError: If the requested endpoint is not supported
+                by the current API version of the LaMetric device.
             LaMetricAuthenticationError: If the API key is invalid.
             LaMetricConnectionError: An error occurred while communication with
                 the LaMetric device.
@@ -117,6 +122,12 @@ class LaMetricDevice:
             if exception.status in [401, 403]:
                 msg = f"Authentication to the LaMetric device at {self.host} failed"
                 raise LaMetricAuthenticationError(msg) from exception
+            if exception.status == 404:
+                msg = (
+                    f"The requested endpoint {uri} is not supported in the current"
+                    f" API version by the LaMetric device at {self.host}."
+                )
+                raise LaMetricUnsupportedError(msg) from exception
             msg = (
                 f"Error occurred while connecting to the LaMetric device at {self.host}"
             )
@@ -264,19 +275,152 @@ class LaMetricDevice:
         data.update(ip=data.get("ipv4"), rssi=data.get("signal_strength"))
         return Wifi.from_dict(data)
 
-    async def app_next(self) -> None:
-        """Switch to the next app on LaMetric Time.
+    async def apps(self) -> dict[str, Application] | None:
+        """Get installed apps on LaMetric device.
 
-        App order is controlled by the user via LaMetric Time app.
+        Note: This feature is only available on API v2.1.0+
+        Devices with OS version < 2.1.0 may not support this.
+
+        Returns
+        -------
+            A dictionary of Application objects keyed by package name,
+            or None if the device doesn't support apps API.
+
+        """
+        try:
+            response = await self._request("/api/v2/device/apps")
+            return {
+                pkg: Application.from_dict(app_data)
+                for pkg, app_data in response.items()
+            }
+        except LaMetricUnsupportedError:
+            return None
+
+    async def app(self, *, package: str) -> Application | None:
+        """Get details of a specific app.
+
+        Args:
+        ----
+            package: The package name of the app (e.g., 'com.lametric.clock').
+
+        Returns:
+        -------
+            An Application object with the app details.
+
+        """
+        try:
+            response = await self._request(f"/api/v2/device/apps/{package}")
+            return Application.from_dict(response)
+        except LaMetricUnsupportedError:
+            return None
+
+    async def widget(self, *, package: str, widget_id: str) -> Widget | None:
+        """Get details of a specific widget.
+
+        Args:
+        ----
+            package: The package name of the app (e.g., 'com.lametric.clock').
+            widget_id: The widget ID.
+
+        Returns:
+        -------
+            A Widget object with the widget details.
+
+        """
+        try:
+            response = await self._request(
+                f"/api/v2/device/apps/{package}/widgets/{widget_id}"
+            )
+            return Widget.from_dict(response)
+        except LaMetricUnsupportedError:
+            return None
+
+    async def app_next(self) -> None:
+        """Switch to the next app on LaMetric device.
+
+        App order is controlled by the user via LaMetric mobile app.
         """
         await self._request("/api/v2/device/apps/next", method=hdrs.METH_PUT)
 
     async def app_previous(self) -> None:
-        """Switch to the next app on LaMetric Time.
+        """Switch to the previous app on LaMetric device.
 
-        App order is controlled by the user via LaMetric Time app.
+        App order is controlled by the user via LaMetric mobile app.
         """
         await self._request("/api/v2/device/apps/prev", method=hdrs.METH_PUT)
+
+    async def app_activate(self, *, package: str, widget_id: str) -> None:
+        """Activate a specific app widget on LaMetric device.
+
+        Args:
+        ----
+            package: The package name of the app (e.g., 'com.lametric.clock').
+            widget_id: The widget ID to activate.
+
+        """
+        await self._request(
+            f"/api/v2/device/apps/{package}/widgets/{widget_id}/activate",
+            method=hdrs.METH_PUT,
+        )
+
+    # pylint: disable=too-many-arguments
+    async def widget_action(
+        self,
+        *,
+        package: str,
+        widget_id: str,
+        action_id: str,
+        parameters: dict[str, Any] | None = None,
+        activate: bool = True,
+    ) -> None:
+        """Interact with a running widget by triggering an action.
+
+        Args:
+        ----
+            package: The package name of the app (e.g., 'com.lametric.clock').
+            widget_id: The widget ID.
+            action_id: The action to trigger (e.g., 'button.press', 'clock.alarm').
+            parameters: Optional parameters for the action.
+            activate: Whether to activate the widget when performing the action.
+
+        """
+        payload = {
+            "id": action_id,
+            "params": parameters or {},
+            "activate": activate,
+        }
+        await self._request(
+            f"/api/v2/device/apps/{package}/widgets/{widget_id}/actions",
+            method=hdrs.METH_POST,
+            data=payload,
+        )
+
+    async def widget_update(
+        self,
+        *,
+        package: str,
+        widget_id: str,
+        settings: dict[str, Any],
+    ) -> Widget:
+        """Update widget settings.
+
+        Args:
+        ----
+            package: The package name of the app (e.g., 'com.lametric.clock').
+            widget_id: The widget ID.
+            settings: The settings to update.
+
+        Returns:
+        -------
+            A Widget object with the updated widget details.
+
+        """
+        response = await self._request(
+            f"/api/v2/device/apps/{package}/widgets/{widget_id}",
+            method=hdrs.METH_PUT,
+            data=settings,
+        )
+        return Widget.from_dict(response)
 
     async def notify(
         self,

@@ -1,0 +1,61 @@
+# serializer version: 1
+# name: test_apps
+  dict({
+    'com.lametric.clock': dict({
+      'actions': dict({
+        'clock.alarm': dict({
+          'id': 'clock.alarm',
+          'title': 'Alarm',
+          'type': 'native',
+        }),
+        'clock.clockface': dict({
+          'id': 'clock.clockface',
+          'params': dict({
+            'type': dict({
+              'type': 'string',
+              'values': list([
+                'weather',
+                'page_a_day',
+                'custom',
+                'none',
+              ]),
+            }),
+          }),
+          'title': 'Clock Face',
+          'type': 'native',
+        }),
+      }),
+      'package': 'com.lametric.clock',
+      'title': 'Clock',
+      'triggers': None,
+      'vendor': 'LaMetric',
+      'version': '1.0.17',
+      'version_code': '23',
+      'widgets': dict({
+        '08b8eac21074f8f7e5a29f2855ba8060': dict({
+          'index': 0,
+          'package': 'com.lametric.clock',
+          'settings': None,
+          'visible': True,
+        }),
+      }),
+    }),
+    'com.lametric.radio': dict({
+      'actions': None,
+      'package': 'com.lametric.radio',
+      'title': 'Radio',
+      'triggers': None,
+      'vendor': 'LaMetric',
+      'version': '1.0.2',
+      'version_code': '8',
+      'widgets': dict({
+        '8a5d6001db1f4040b0eeb50e63f3e8af': dict({
+          'index': 1,
+          'package': 'com.lametric.radio',
+          'settings': None,
+          'visible': True,
+        }),
+      }),
+    }),
+  })
+# ---

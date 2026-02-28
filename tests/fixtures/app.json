@@ -1,0 +1,26 @@
+{
+  "package": "com.lametric.clock",
+  "vendor": "LaMetric",
+  "version": "1.0.17",
+  "version_code": "23",
+  "title": "Clock",
+  "actions": {
+    "clock.alarm": {
+      "id": "clock.alarm",
+      "title": "Alarm",
+      "type": "native"
+    },
+    "clock.clockface": {
+      "id": "clock.clockface",
+      "title": "Clock Face",
+      "type": "native"
+    }
+  },
+  "widgets": {
+    "08b8eac21074f8f7e5a29f2855ba8060": {
+      "index": 0,
+      "package": "com.lametric.clock",
+      "visible": true
+    }
+  }
+}

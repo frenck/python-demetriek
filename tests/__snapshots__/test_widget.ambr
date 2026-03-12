@@ -1,0 +1,23 @@
+# serializer version: 1
+# name: test_widget
+  dict({
+    'index': 0,
+    'package': 'com.lametric.clock',
+    'settings': dict({
+      'date_format': 'DD.MM.YYYY',
+      'time_format': 'h:mm:ss',
+    }),
+    'visible': True,
+  })
+# ---
+# name: test_widget_update
+  dict({
+    'index': 0,
+    'package': 'com.lametric.clock',
+    'settings': dict({
+      'date_format': 'MM/DD/YYYY',
+      'time_format': 'HH:mm:ss',
+    }),
+    'visible': True,
+  })
+# ---

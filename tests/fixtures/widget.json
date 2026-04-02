@@ -1,0 +1,9 @@
+{
+  "index": 0,
+  "package": "com.lametric.clock",
+  "visible": true,
+  "settings": {
+    "time_format": "h:mm:ss",
+    "date_format": "DD.MM.YYYY"
+  }
+}

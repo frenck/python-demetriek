@@ -99,6 +99,8 @@ async def test_notify(aresponses: ResponsesMockServer) -> None:
     assert request["type"] == "external"
     assert request["icon_type"] == "alert"
     assert "life_time" not in request
+    assert "unit" in request["model"]["frames"][1]["goalData"]
+    assert "icon" not in request["model"]["frames"][2]
     assert request["model"]["sound"]["id"] == "win"
     assert request["model"]["sound"]["category"] == "notifications"
     assert request["model"]["frames"][0]["text"] == "Yeah"

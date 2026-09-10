@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, time
 from ipaddress import IPv4Address
 
 from awesomeversion import AwesomeVersion
@@ -57,10 +57,40 @@ class Bluetooth(DataClassORJSONMixin):
 
 
 @dataclass(kw_only=True)
+class DisplayScreensaverTimeBased(DataClassORJSONMixin):
+    """Object holding the time based screensaver mode of an LaMetric device."""
+
+    enabled: bool
+    end_time: time | None = None
+    start_time: time | None = None
+
+    # Derived by the device from start_time/end_time, which are in GMT.
+    local_end_time: time | None = None
+    local_start_time: time | None = None
+
+
+@dataclass(kw_only=True)
+class DisplayScreensaverWhenDark(DataClassORJSONMixin):
+    """Object holding the when dark screensaver mode of an LaMetric device."""
+
+    enabled: bool
+
+
+@dataclass(kw_only=True)
+class DisplayScreensaverModes(DataClassORJSONMixin):
+    """Object holding the screensaver modes of an LaMetric device."""
+
+    time_based: DisplayScreensaverTimeBased
+    when_dark: DisplayScreensaverWhenDark
+
+
+@dataclass(kw_only=True)
 class DisplayScreensaver(DataClassORJSONMixin):
     """Object holding the screensaver data of an LaMetric device."""
 
     enabled: bool
+    modes: DisplayScreensaverModes | None = None
+    widget: str | None = None
 
 
 @dataclass(kw_only=True)
@@ -141,6 +171,11 @@ class Simple(DataClassORJSONMixin):
     icon: int | str | None = None
     text: str
 
+    class Config(BaseConfig):
+        """Simple model configuration."""
+
+        omit_none = True
+
 
 @dataclass(kw_only=True)
 class GoalData(DataClassORJSONMixin):
@@ -150,6 +185,11 @@ class GoalData(DataClassORJSONMixin):
     end: int
     start: int
     unit: str | None = None
+
+    class Config(BaseConfig):
+        """Goal data model configuration."""
+
+        omit_none = True
 
 
 @dataclass(kw_only=True)
@@ -162,6 +202,7 @@ class Goal(DataClassORJSONMixin):
     class Config(BaseConfig):
         """Goal model configuration."""
 
+        omit_none = True
         serialize_by_alias = True
         allow_deserialization_not_by_alias = True
 
@@ -199,6 +240,11 @@ class SoundURL(DataClassORJSONMixin):
     url: str
     type: str = "mp3"
     fallback: Sound | None = None
+
+    class Config(BaseConfig):
+        """Sound URL model configuration."""
+
+        omit_none = True
 
 
 @dataclass(kw_only=True)

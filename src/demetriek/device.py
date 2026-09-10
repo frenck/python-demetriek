@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Self, cast
+from typing import TYPE_CHECKING, Any, Self
 
 import aiohttp
 import backoff
@@ -29,7 +29,9 @@ from .models import (
 )
 
 if TYPE_CHECKING:
-    from .const import BrightnessMode, DeviceMode
+    from datetime import time
+
+    from .const import BrightnessMode, DeviceMode, ScreensaverMode
 
 
 @dataclass
@@ -163,21 +165,36 @@ class LaMetricDevice:
             data={"mode": mode},
         )
 
-    async def display(
+    # Keyword-only setters for each display property the device accepts.
+    async def display(  # noqa: PLR0913 # pylint: disable=too-many-arguments
         self,
         *,
         brightness: int | None = None,
         brightness_mode: BrightnessMode | None = None,
         screensaver_enabled: bool | None = None,
+        screensaver_mode: ScreensaverMode | None = None,
+        screensaver_mode_enabled: bool | None = None,
+        screensaver_start_time: time | None = None,
+        screensaver_end_time: time | None = None,
         on: bool | None = None,
     ) -> Display:
         """Get or set LaMetric device display information.
+
+        The device keeps a single screensaver mode active; enabling one mode
+        disables the other. `screensaver_enabled` is the separate master
+        switch and can be set without touching the modes.
 
         Args:
         ----
             brightness: Brightness level to set.
             brightness_mode: Brightness mode to set.
             screensaver_enabled: Whether the screensaver should be enabled.
+            screensaver_mode: Screensaver mode to configure.
+            screensaver_mode_enabled: Whether to enable the screensaver mode.
+            screensaver_start_time: Time in GMT the screensaver starts,
+                for the time based mode.
+            screensaver_end_time: Time in GMT the screensaver ends,
+                for the time based mode.
             on: Whether the display should be turned on or off.
 
         Returns:
@@ -186,7 +203,7 @@ class LaMetricDevice:
             the display of the LaMetric device.
 
         """
-        data: dict[str, int | BrightnessMode | dict[str, bool]] = {}
+        data: dict[str, Any] = {}
 
         if brightness is not None:
             data["brightness"] = brightness
@@ -194,8 +211,29 @@ class LaMetricDevice:
         if brightness_mode is not None:
             data["brightness_mode"] = brightness_mode
 
+        screensaver: dict[str, Any] = {}
+
         if screensaver_enabled is not None:
-            data["screensaver"] = {"enabled": screensaver_enabled}
+            screensaver["enabled"] = screensaver_enabled
+
+        if screensaver_mode is not None:
+            mode_params: dict[str, Any] = {}
+
+            if screensaver_mode_enabled is not None:
+                mode_params["enabled"] = screensaver_mode_enabled
+
+            if screensaver_start_time is not None:
+                mode_params["start_time"] = screensaver_start_time.isoformat()
+
+            if screensaver_end_time is not None:
+                mode_params["end_time"] = screensaver_end_time.isoformat()
+
+            screensaver["mode"] = screensaver_mode
+            if mode_params:
+                screensaver["mode_params"] = mode_params
+
+        if screensaver:
+            data["screensaver"] = screensaver
 
         if on is not None:
             data["on"] = on
@@ -316,7 +354,7 @@ class LaMetricDevice:
             method=hdrs.METH_POST,
             data=notification.to_dict(),
         )
-        return cast("int", response["success"]["id"])
+        return int(response["success"]["id"])
 
     async def dismiss_notification(self, *, notification_id: int) -> None:
         """Remove a notification from the queue.

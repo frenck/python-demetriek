@@ -125,6 +125,13 @@ class NotificationType(str, Enum):
     EXTERNAL = "external"
 
 
+class ScreensaverMode(str, Enum):
+    """Enum holding the available screensaver modes."""
+
+    TIME_BASED = "time_based"
+    WHEN_DARK = "when_dark"
+
+
 class WifiMode(str, Enum):
     """Enum holding the available Wi-Fi modes."""
 

@@ -38,6 +38,19 @@
       'on': None,
       'screensaver': dict({
         'enabled': False,
+        'modes': dict({
+          'time_based': dict({
+            'enabled': True,
+            'end_time': None,
+            'local_end_time': None,
+            'local_start_time': datetime.time(1, 0, 39),
+            'start_time': datetime.time(0, 0, 39),
+          }),
+          'when_dark': dict({
+            'enabled': False,
+          }),
+        }),
+        'widget': '08b8eac21074f8f7e5a29f2855ba8060',
       }),
       'width': 37,
     }),
@@ -99,6 +112,19 @@
       'on': None,
       'screensaver': dict({
         'enabled': False,
+        'modes': dict({
+          'time_based': dict({
+            'enabled': True,
+            'end_time': None,
+            'local_end_time': None,
+            'local_start_time': datetime.time(1, 0, 39),
+            'start_time': datetime.time(0, 0, 39),
+          }),
+          'when_dark': dict({
+            'enabled': False,
+          }),
+        }),
+        'widget': '08b8eac21074f8f7e5a29f2855ba8060',
       }),
       'width': 37,
     }),
@@ -160,6 +186,19 @@
       'on': True,
       'screensaver': dict({
         'enabled': True,
+        'modes': dict({
+          'time_based': dict({
+            'enabled': False,
+            'end_time': None,
+            'local_end_time': None,
+            'local_start_time': None,
+            'start_time': None,
+          }),
+          'when_dark': dict({
+            'enabled': True,
+          }),
+        }),
+        'widget': '1_com.lametric.clock',
       }),
       'width': 37,
     }),

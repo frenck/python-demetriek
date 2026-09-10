@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Self, cast
+from typing import TYPE_CHECKING, Any, Self
 
 import aiohttp
 import backoff
@@ -299,7 +299,7 @@ class LaMetricDevice:
             method=hdrs.METH_POST,
             data=notification.to_dict(),
         )
-        return cast("int", response["success"]["id"])
+        return int(response["success"]["id"])
 
     async def dismiss_notification(self, *, notification_id: int) -> None:
         """Remove a notification from the queue.

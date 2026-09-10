@@ -39,6 +39,7 @@
       'screensaver': dict({
         'enabled': False,
         'modes': dict({
+          'screen_off': None,
           'time_based': dict({
             'enabled': True,
             'end_time': None,
@@ -113,6 +114,7 @@
       'screensaver': dict({
         'enabled': False,
         'modes': dict({
+          'screen_off': None,
           'time_based': dict({
             'enabled': True,
             'end_time': None,
@@ -187,6 +189,7 @@
       'screensaver': dict({
         'enabled': True,
         'modes': dict({
+          'screen_off': None,
           'time_based': dict({
             'enabled': False,
             'end_time': None,
@@ -220,6 +223,83 @@
       'netmask': '255.255.255.0',
       'rssi': 78,
       'ssid': 'NETGEARAA',
+    }),
+  })
+# ---
+# name: test_get_device[device_sky.json]
+  dict({
+    'audio': dict({
+      'available': True,
+      'volume': 100,
+      'volume_limit': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'volume_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+    }),
+    'bluetooth': dict({
+      'active': True,
+      'address': 'AA:BB:CC:DD:EE:FF',
+      'available': True,
+      'discoverable': True,
+      'name': 'SKY0123',
+      'pairable': False,
+    }),
+    'device_id': '12345',
+    'display': dict({
+      'brightness': 66,
+      'brightness_limit': dict({
+        'range_max': 100,
+        'range_min': 2,
+      }),
+      'brightness_mode': <BrightnessMode.MANUAL: 'manual'>,
+      'brightness_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'display_type': <DisplayType.MIXED: 'mixed'>,
+      'height': 8,
+      'on': True,
+      'screensaver': dict({
+        'enabled': True,
+        'modes': dict({
+          'screen_off': dict({
+            'enabled': False,
+          }),
+          'time_based': dict({
+            'enabled': False,
+            'end_time': None,
+            'local_end_time': None,
+            'local_start_time': None,
+            'start_time': None,
+          }),
+          'when_dark': None,
+        }),
+        'widget': '',
+      }),
+      'width': 64,
+    }),
+    'mode': <DeviceMode.MANUAL: 'manual'>,
+    'model': 'sa5',
+    'name': "spyfly's LaMetric SKY",
+    'os_version': '3.0.13',
+    'serial_number': 'SA52100000123TBNC',
+    'update': dict({
+      'version': '3.2.1',
+    }),
+    'wifi': dict({
+      'active': True,
+      'available': True,
+      'encryption': 'WPA',
+      'ip': IPv4Address('127.0.0.1'),
+      'mac': 'AA:BB:CC:DD:EE:FF',
+      'mode': <WifiMode.DHCP: 'dhcp'>,
+      'netmask': '255.255.255.0',
+      'rssi': 58,
+      'ssid': 'IoT',
     }),
   })
 # ---

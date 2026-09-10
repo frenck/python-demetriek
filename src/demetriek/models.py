@@ -72,6 +72,13 @@ class DisplayScreensaverTimeBased(DataClassORJSONMixin):
 
 
 @dataclass(kw_only=True)
+class DisplayScreensaverScreenOff(DataClassORJSONMixin):
+    """Object holding the screen off screensaver mode of an LaMetric device."""
+
+    enabled: bool
+
+
+@dataclass(kw_only=True)
 class DisplayScreensaverWhenDark(DataClassORJSONMixin):
     """Object holding the when dark screensaver mode of an LaMetric device."""
 
@@ -80,10 +87,16 @@ class DisplayScreensaverWhenDark(DataClassORJSONMixin):
 
 @dataclass(kw_only=True)
 class DisplayScreensaverModes(DataClassORJSONMixin):
-    """Object holding the screensaver modes of an LaMetric device."""
+    """Object holding the screensaver modes of an LaMetric device.
 
-    time_based: DisplayScreensaverTimeBased
-    when_dark: DisplayScreensaverWhenDark
+    Which modes a device reports depends on the hardware. A TIME reports
+    when_dark, a SKY reports screen_off, and both report time_based, so
+    every mode is optional.
+    """
+
+    screen_off: DisplayScreensaverScreenOff | None = None
+    time_based: DisplayScreensaverTimeBased | None = None
+    when_dark: DisplayScreensaverWhenDark | None = None
 
 
 @dataclass(kw_only=True)

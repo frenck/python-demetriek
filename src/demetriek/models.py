@@ -145,13 +145,12 @@ class Device(DataClassORJSONMixin):
     wifi: Wifi
 
     @property
-    def model_name(self) -> str:
+    def model_name(self) -> str | None:
         """Return the product name for the reported model.
 
-        Falls back to the reported model, so unknown hardware still
-        gives something usable.
+        None if the reported model is not a known one.
         """
-        return DEVICE_MODELS.get(self.model, self.model)
+        return DEVICE_MODELS.get(self.model)
 
 
 @dataclass(kw_only=True)

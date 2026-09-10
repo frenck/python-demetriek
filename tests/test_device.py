@@ -131,16 +131,16 @@ async def test_set_device_mode(aresponses: ResponsesMockServer) -> None:
 @pytest.mark.parametrize(
     ("model", "expected"),
     [
-        ("LM 37X8", "LaMetric TIME"),
-        ("sa8", "LaMetric TIME"),
-        ("sa5", "LaMetric SKY"),
-        ("something-new", "something-new"),
+        ("LM 37X8", "TIME"),
+        ("sa8", "TIME"),
+        ("sa5", "SKY"),
+        ("something-new", None),
     ],
 )
 async def test_device_model_name(
     aresponses: ResponsesMockServer,
     model: str,
-    expected: str,
+    expected: str | None,
 ) -> None:
     """Test the reported model is translated to a product name."""
     payload = json.loads(load_fixture("device3.json"))

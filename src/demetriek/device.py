@@ -20,6 +20,7 @@ from .exceptions import (
     LaMetricError,
 )
 from .models import (
+    App,
     Audio,
     Bluetooth,
     Device,
@@ -318,6 +319,87 @@ class LaMetricDevice:
         data = await self._request("/api/v2/device/wifi")
         data.update(ip=data.get("ipv4"), rssi=data.get("signal_strength"))
         return Wifi.from_dict(data)
+
+    async def apps(self) -> dict[str, App]:
+        """Get the apps installed on LaMetric Time.
+
+        Returns
+        -------
+            The installed apps, keyed by package name.
+
+        """
+        response = await self._request("/api/v2/device/apps")
+        return {package: App.from_dict(app) for package, app in response.items()}
+
+    async def app(self, *, package: str) -> App:
+        """Get a single app installed on LaMetric Time.
+
+        Widgets are reported without their visibility here; use `apps()`
+        to see which widget is visible.
+
+        Args:
+        ----
+            package: Package name of the app, for example
+                `com.lametric.clock`.
+
+        Returns:
+        -------
+            An App object.
+
+        """
+        response = await self._request(f"/api/v2/device/apps/{package}")
+        return App.from_dict(response)
+
+    async def activate_widget(self, *, package: str, widget_id: str) -> None:
+        """Show a specific widget of an app on LaMetric Time.
+
+        Args:
+        ----
+            package: Package name of the app the widget belongs to.
+            widget_id: ID of the widget to show.
+
+        """
+        await self._request(
+            f"/api/v2/device/apps/{package}/widgets/{widget_id}/activate",
+            method=hdrs.METH_PUT,
+        )
+
+    async def app_action(  # pylint: disable=too-many-arguments
+        self,
+        *,
+        package: str,
+        widget_id: str,
+        action: str,
+        params: dict[str, Any] | None = None,
+        activate: bool | None = None,
+    ) -> None:
+        """Run an action of an app on LaMetric Time.
+
+        The actions an app offers, and the parameters they take, are
+        reported by `apps()` and `app()`.
+
+        Args:
+        ----
+            package: Package name of the app the widget belongs to.
+            widget_id: ID of the widget to run the action on.
+            action: Name of the action, for example `clock.alarm`.
+            params: Parameters for the action.
+            activate: Whether to show the widget when running the action.
+
+        """
+        data: dict[str, Any] = {"id": action}
+
+        if params is not None:
+            data["params"] = params
+
+        if activate is not None:
+            data["activate"] = activate
+
+        await self._request(
+            f"/api/v2/device/apps/{package}/widgets/{widget_id}/actions",
+            method=hdrs.METH_POST,
+            data=data,
+        )
 
     async def app_next(self) -> None:
         """Switch to the next app on LaMetric Time.

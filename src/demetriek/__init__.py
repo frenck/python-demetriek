@@ -23,6 +23,8 @@ from .exceptions import (
     LaMetricError,
 )
 from .models import (
+    App,
+    AppParameter,
     Audio,
     Bluetooth,
     Chart,
@@ -42,11 +44,14 @@ from .models import (
     Sound,
     SoundURL,
     User,
+    Widget,
     Wifi,
 )
 
 __all__ = [
     "AlarmSound",
+    "App",
+    "AppParameter",
     "Audio",
     "Bluetooth",
     "BrightnessMode",
@@ -82,6 +87,7 @@ __all__ = [
     "Sound",
     "SoundURL",
     "User",
+    "Widget",
     "Wifi",
     "WifiMode",
 ]

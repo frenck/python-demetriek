@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, time
 from ipaddress import IPv4Address
+from typing import Any
 
 from awesomeversion import AwesomeVersion
 from mashumaro import field_options
@@ -158,6 +159,54 @@ class Update(DataClassORJSONMixin):
     """Object holding the update state of an LaMetric device."""
 
     version: AwesomeVersion
+
+
+@dataclass(kw_only=True)
+class AppParameter(DataClassORJSONMixin):
+    """Object holding a parameter of an app action or trigger."""
+
+    data_type: str
+    name: str
+
+    # A regular expression the value has to match, when the device
+    # constrains it.
+    format: str | None = None
+
+    # Absent on trigger parameters.
+    required: bool | None = None
+
+
+@dataclass(kw_only=True)
+class Widget(DataClassORJSONMixin):
+    """Object holding a widget of an app on an LaMetric device."""
+
+    index: int
+    package: str
+
+    # Free form, and specific to the app it belongs to.
+    settings: dict[str, Any] = field(default_factory=dict)
+
+    # Only reported when listing all apps.
+    visible: bool | None = None
+
+
+@dataclass(kw_only=True)
+class App(DataClassORJSONMixin):
+    """Object holding an app installed on an LaMetric device."""
+
+    package: str
+    title: str
+    vendor: str
+    version: AwesomeVersion
+    version_code: str
+
+    # Keyed by action or trigger name, holding their parameters by name.
+    # Apps without any actions leave the key out entirely.
+    actions: dict[str, dict[str, AppParameter]] = field(default_factory=dict)
+    triggers: dict[str, dict[str, AppParameter]] = field(default_factory=dict)
+
+    # Keyed by widget ID.
+    widgets: dict[str, Widget] = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)

@@ -12,6 +12,7 @@ from mashumaro.config import BaseConfig
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from .const import (
+    DEVICE_MODELS,
     AlarmSound,
     BrightnessMode,
     DeviceMode,
@@ -142,6 +143,15 @@ class Device(DataClassORJSONMixin):
         metadata=field_options(alias="update_available"), default=None
     )
     wifi: Wifi
+
+    @property
+    def model_name(self) -> str:
+        """Return the product name for the reported model.
+
+        Falls back to the reported model, so unknown hardware still
+        gives something usable.
+        """
+        return DEVICE_MODELS.get(self.model, self.model)
 
 
 @dataclass(kw_only=True)

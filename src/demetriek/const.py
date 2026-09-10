@@ -2,6 +2,14 @@
 
 from enum import Enum
 
+# The model the device reports is a hardware identifier, not a product name.
+# LaMetric TIME reports "LM 37X8" on firmware 2.x and "sa8" on 3.x.
+DEVICE_MODELS: dict[str, str] = {
+    "LM 37X8": "LaMetric TIME",
+    "sa5": "LaMetric SKY",
+    "sa8": "LaMetric TIME",
+}
+
 
 class BrightnessMode(str, Enum):
     """Enum holding the available brightness modes."""

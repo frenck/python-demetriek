@@ -1,0 +1,37 @@
+{
+  "success": {
+    "data": {
+      "brightness": 75,
+      "brightness_limit": {
+        "max": 100,
+        "min": 2
+      },
+      "brightness_mode": "auto",
+      "brightness_range": {
+        "max": 100,
+        "min": 0
+      },
+      "height": 8,
+      "on": true,
+      "screensaver": {
+        "enabled": true,
+        "modes": {
+          "time_based": {
+            "enabled": true,
+            "end_time": "07:00:00",
+            "local_end_time": "09:00:00",
+            "local_start_time": "01:00:00",
+            "start_time": "23:00:00"
+          },
+          "when_dark": {
+            "enabled": false
+          }
+        },
+        "widget": "1_com.lametric.clock"
+      },
+      "type": "mixed",
+      "width": 37
+    },
+    "path": "/api/v2/device/display"
+  }
+}

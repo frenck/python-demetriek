@@ -35,6 +35,7 @@ from . import load_fixture
         "device.json",
         "device2.json",
         "device3.json",
+        "device_sky.json",
     ],
 )
 async def test_get_device(
@@ -186,3 +187,29 @@ async def test_notification(aresponses: ResponsesMockServer) -> None:
     assert notification.notification_type is NotificationType.EXTERNAL
     assert notification.priority is NotificationPriority.INFO
     assert notification.model.frames == [Simple(text="fixture")]
+
+
+async def test_get_device_sky_screensaver(aresponses: ResponsesMockServer) -> None:
+    """Test the screensaver modes a SKY reports differ from a TIME."""
+    aresponses.add(
+        "127.0.0.2:4343",
+        "/api/v2/device",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("device_sky.json"),
+        ),
+    )
+    async with aiohttp.ClientSession() as session:
+        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
+        device = await demetriek.device()
+
+    assert (screensaver := device.display.screensaver)
+    assert (modes := screensaver.modes)
+    # A SKY reports screen_off where a TIME reports when_dark.
+    assert modes.screen_off is not None
+    assert modes.screen_off.enabled is False
+    assert modes.when_dark is None
+    assert modes.time_based is not None
+    assert modes.time_based.enabled is False

@@ -41,16 +41,20 @@ async def test_get_display(aresponses: ResponsesMockServer) -> None:
     assert display.height == 8
     assert display.display_type is DisplayType.MIXED
     assert display.on is True
-    assert display.screensaver
-    assert display.screensaver.enabled is False
-    assert display.screensaver.widget == "08b8eac21074f8f7e5a29f2855ba8060"
-    assert display.screensaver.modes
-    assert display.screensaver.modes.when_dark.enabled is False
-    assert display.screensaver.modes.time_based.enabled is True
-    assert display.screensaver.modes.time_based.start_time == time(0, 0, 39)
-    assert display.screensaver.modes.time_based.end_time is None
-    assert display.screensaver.modes.time_based.local_start_time == time(1, 0, 39)
-    assert display.screensaver.modes.time_based.local_end_time is None
+    assert (screensaver := display.screensaver)
+    assert screensaver.enabled is False
+    assert screensaver.widget == "08b8eac21074f8f7e5a29f2855ba8060"
+    assert (modes := screensaver.modes)
+    assert (when_dark := modes.when_dark)
+    assert when_dark.enabled is False
+    assert (time_based := modes.time_based)
+    assert time_based.enabled is True
+    assert time_based.start_time == time(0, 0, 39)
+    assert time_based.end_time is None
+    assert time_based.local_start_time == time(1, 0, 39)
+    assert time_based.local_end_time is None
+    # A TIME reports no screen_off mode.
+    assert modes.screen_off is None
 
 
 async def test_set_display(aresponses: ResponsesMockServer) -> None:
@@ -130,15 +134,17 @@ async def test_set_display_screensaver_mode(aresponses: ResponsesMockServer) -> 
             screensaver_end_time=time(7, 0, 0),
         )
 
-    assert display.screensaver
-    assert display.screensaver.modes
-    assert display.screensaver.modes.time_based.enabled is True
-    assert display.screensaver.modes.time_based.start_time == time(23, 0, 0)
-    assert display.screensaver.modes.time_based.end_time == time(7, 0, 0)
-    assert display.screensaver.modes.time_based.local_start_time == time(1, 0, 0)
-    assert display.screensaver.modes.time_based.local_end_time == time(9, 0, 0)
+    assert (screensaver := display.screensaver)
+    assert (modes := screensaver.modes)
+    assert (time_based := modes.time_based)
+    assert time_based.enabled is True
+    assert time_based.start_time == time(23, 0, 0)
+    assert time_based.end_time == time(7, 0, 0)
+    assert time_based.local_start_time == time(1, 0, 0)
+    assert time_based.local_end_time == time(9, 0, 0)
     # Enabling one mode disables the other on the device.
-    assert display.screensaver.modes.when_dark.enabled is False
+    assert (when_dark := modes.when_dark)
+    assert when_dark.enabled is False
 
 
 async def test_set_display_screensaver_mode_without_params(

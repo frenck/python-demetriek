@@ -17,6 +17,7 @@ from demetriek import (
     Model,
     Notification,
     NotificationIconType,
+    NotificationPriority,
     NotificationSound,
     Simple,
     Sound,
@@ -162,3 +163,26 @@ async def test_device_model_name(
     assert device.model_name == expected
     # The raw identifier stays available; consumers match on it.
     assert device.model == model
+
+
+async def test_notification(aresponses: ResponsesMockServer) -> None:
+    """Test getting a single notification."""
+    aresponses.add(
+        "127.0.0.2:4343",
+        "/api/v2/device/notifications/25",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("notification_get.json"),
+        ),
+    )
+    async with aiohttp.ClientSession() as session:
+        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
+        notification = await demetriek.notification(notification_id=25)
+
+    # The device sends the ID as a string.
+    assert notification.notification_id == 25
+    assert notification.notification_type is NotificationType.EXTERNAL
+    assert notification.priority is NotificationPriority.INFO
+    assert notification.model.frames == [Simple(text="fixture")]

@@ -393,6 +393,23 @@ class LaMetricDevice:
                 notification_id=notification.notification_id,
             )
 
+    async def notification(self, *, notification_id: int) -> Notification:
+        """Get a single notification from the queue.
+
+        Args:
+        ----
+            notification_id: Notification ID to get.
+
+        Returns:
+        -------
+            A Notification object.
+
+        """
+        response = await self._request(
+            f"/api/v2/device/notifications/{notification_id}",
+        )
+        return Notification.from_dict(response)
+
     async def notification_current(self) -> Notification | None:
         """Get the current notification.
 

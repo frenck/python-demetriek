@@ -1,0 +1,16 @@
+{
+  "created": "2026-09-10T17:50:38Z",
+  "expiration_date": "2026-09-10T17:52:38Z",
+  "id": "25",
+  "model": {
+    "cycles": 1,
+    "frames": [
+      {
+        "text": "fixture"
+      }
+    ]
+  },
+  "priority": "info",
+  "type": "external",
+  "updated": "2026-09-10T17:50:38Z"
+}

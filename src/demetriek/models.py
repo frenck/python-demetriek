@@ -141,6 +141,11 @@ class Simple(DataClassORJSONMixin):
     icon: int | str | None = None
     text: str
 
+    class Config(BaseConfig):
+        """Simple model configuration."""
+
+        omit_none = True
+
 
 @dataclass(kw_only=True)
 class GoalData(DataClassORJSONMixin):
@@ -150,6 +155,11 @@ class GoalData(DataClassORJSONMixin):
     end: int
     start: int
     unit: str | None = None
+
+    class Config(BaseConfig):
+        """Goal data model configuration."""
+
+        omit_none = True
 
 
 @dataclass(kw_only=True)
@@ -162,6 +172,7 @@ class Goal(DataClassORJSONMixin):
     class Config(BaseConfig):
         """Goal model configuration."""
 
+        omit_none = True
         serialize_by_alias = True
         allow_deserialization_not_by_alias = True
 
@@ -199,6 +210,11 @@ class SoundURL(DataClassORJSONMixin):
     url: str
     type: str = "mp3"
     fallback: Sound | None = None
+
+    class Config(BaseConfig):
+        """Sound URL model configuration."""
+
+        omit_none = True
 
 
 @dataclass(kw_only=True)

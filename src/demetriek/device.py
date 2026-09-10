@@ -29,7 +29,7 @@ from .models import (
 )
 
 if TYPE_CHECKING:
-    from .const import BrightnessMode
+    from .const import BrightnessMode, DeviceMode
 
 
 @dataclass
@@ -145,6 +145,23 @@ class LaMetricDevice:
         )
 
         return Device.from_dict(response)
+
+    async def set_device_mode(self, *, mode: DeviceMode) -> None:
+        """Set the mode of the LaMetric device.
+
+        The device only echoes back the mode it applied, so nothing is
+        returned. Call `device()` to read the resulting state.
+
+        Args:
+        ----
+            mode: Mode to set the device to.
+
+        """
+        await self._request(
+            "/api/v2/device",
+            method=hdrs.METH_PUT,
+            data={"mode": mode},
+        )
 
     async def display(
         self,

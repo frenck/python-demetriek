@@ -4,11 +4,12 @@ from dataclasses import asdict
 
 import aiohttp
 import pytest
-from aresponses import ResponsesMockServer
+from aresponses import Response, ResponsesMockServer
 from syrupy.assertion import SnapshotAssertion
 
 from demetriek import (
     Chart,
+    DeviceMode,
     Goal,
     GoalData,
     LaMetricDevice,
@@ -103,3 +104,22 @@ async def test_notify(aresponses: ResponsesMockServer) -> None:
     assert request["model"]["frames"][0]["text"] == "Yeah"
     assert request["model"]["frames"][1]["goalData"]["current"] == 65
     assert request["model"]["frames"][2]["chartData"] == [1, 2, 3, 4, 5, 4, 3, 2, 1]
+
+
+async def test_set_device_mode(aresponses: ResponsesMockServer) -> None:
+    """Test setting the device mode."""
+
+    async def response_handler(request: aiohttp.ClientResponse) -> Response:
+        """Response handler for this test."""
+        assert await request.json() == {"mode": "kiosk"}
+        return aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("device_set_mode.json"),
+        )
+
+    aresponses.add("127.0.0.2:4343", "/api/v2/device", "PUT", response_handler)
+
+    async with aiohttp.ClientSession() as session:
+        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
+        await demetriek.set_device_mode(mode=DeviceMode.KIOSK)

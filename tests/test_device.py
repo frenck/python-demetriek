@@ -1,5 +1,6 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
+import json
 from dataclasses import asdict
 
 import aiohttp
@@ -125,3 +126,39 @@ async def test_set_device_mode(aresponses: ResponsesMockServer) -> None:
     async with aiohttp.ClientSession() as session:
         demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
         await demetriek.set_device_mode(mode=DeviceMode.KIOSK)
+
+
+@pytest.mark.parametrize(
+    ("model", "expected"),
+    [
+        ("LM 37X8", "TIME"),
+        ("sa8", "TIME"),
+        ("sa5", "SKY"),
+        ("something-new", None),
+    ],
+)
+async def test_device_model_name(
+    aresponses: ResponsesMockServer,
+    model: str,
+    expected: str | None,
+) -> None:
+    """Test the reported model is translated to a product name."""
+    payload = json.loads(load_fixture("device3.json"))
+    payload["model"] = model
+    aresponses.add(
+        "127.0.0.2:4343",
+        "/api/v2/device",
+        "GET",
+        aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=json.dumps(payload),
+        ),
+    )
+    async with aiohttp.ClientSession() as session:
+        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
+        device = await demetriek.device()
+
+    assert device.model_name == expected
+    # The raw identifier stays available; consumers match on it.
+    assert device.model == model

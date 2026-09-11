@@ -45,6 +45,7 @@ async def test_get_display(aresponses: ResponsesMockServer) -> None:
     assert display.screensaver.enabled is False
     assert display.screensaver.widget == "08b8eac21074f8f7e5a29f2855ba8060"
     assert display.screensaver.modes
+    assert display.screensaver.modes.when_dark
     assert display.screensaver.modes.when_dark.enabled is False
     assert display.screensaver.modes.time_based.enabled is True
     assert display.screensaver.modes.time_based.start_time == time(0, 0, 39)
@@ -138,6 +139,7 @@ async def test_set_display_screensaver_mode(aresponses: ResponsesMockServer) -> 
     assert display.screensaver.modes.time_based.local_start_time == time(1, 0, 0)
     assert display.screensaver.modes.time_based.local_end_time == time(9, 0, 0)
     # Enabling one mode disables the other on the device.
+    assert display.screensaver.modes.when_dark
     assert display.screensaver.modes.when_dark.enabled is False
 
 

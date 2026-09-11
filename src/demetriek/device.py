@@ -13,6 +13,7 @@ from aiohttp import hdrs
 from aiohttp.helpers import BasicAuth
 from yarl import URL
 
+from .const import ScreensaverMode
 from .exceptions import (
     LaMetricAuthenticationError,
     LaMetricConnectionError,
@@ -32,7 +33,7 @@ from .models import (
 if TYPE_CHECKING:
     from datetime import time
 
-    from .const import BrightnessMode, DeviceMode, ScreensaverMode
+    from .const import BrightnessMode, DeviceMode
 
 
 @dataclass
@@ -203,7 +204,25 @@ class LaMetricDevice:
             A Display object, with latest or updated information about
             the display of the LaMetric device.
 
+        Raises:
+        ------
+            ValueError: The time based mode was given without both of
+                its times.
+
         """
+        # The device wants both times on every time based write, even one
+        # that only toggles the mode. It rejects a lone end time and
+        # quietly ignores a lone start time, so catch that here rather
+        # than let it look like it worked.
+        if screensaver_mode is ScreensaverMode.TIME_BASED and (
+            screensaver_start_time is None or screensaver_end_time is None
+        ):
+            msg = (
+                "The time based screensaver mode needs both"
+                " screensaver_start_time and screensaver_end_time"
+            )
+            raise ValueError(msg)
+
         data: dict[str, Any] = {}
 
         if brightness is not None:

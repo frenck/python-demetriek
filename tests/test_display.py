@@ -4,6 +4,7 @@
 from datetime import time
 
 import aiohttp
+import pytest
 from aresponses import Response, ResponsesMockServer
 
 from demetriek import LaMetricDevice
@@ -163,3 +164,52 @@ async def test_set_display_screensaver_mode_without_params(
     async with aiohttp.ClientSession() as session:
         demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
         await demetriek.display(screensaver_mode=ScreensaverMode.WHEN_DARK)
+
+
+@pytest.mark.parametrize(
+    ("start_time", "end_time"),
+    [
+        (time(23, 0, 0), None),
+        (None, time(7, 0, 0)),
+        (None, None),
+    ],
+)
+async def test_set_display_screensaver_time_based_needs_both_times(
+    start_time: time | None,
+    end_time: time | None,
+) -> None:
+    """Test the time based mode is rejected without both of its times."""
+    demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc")
+    with pytest.raises(ValueError, match="needs both"):
+        await demetriek.display(
+            screensaver_mode=ScreensaverMode.TIME_BASED,
+            screensaver_mode_enabled=True,
+            screensaver_start_time=start_time,
+            screensaver_end_time=end_time,
+        )
+
+
+async def test_set_display_screensaver_when_dark_needs_no_times(
+    aresponses: ResponsesMockServer,
+) -> None:
+    """Test the other modes are unaffected by the time based requirement."""
+
+    async def response_handler(request: aiohttp.ClientResponse) -> Response:
+        """Response handler for this test."""
+        assert await request.json() == {
+            "screensaver": {"mode": "when_dark", "mode_params": {"enabled": True}},
+        }
+        return aresponses.Response(
+            status=200,
+            headers={"Content-Type": "application/json"},
+            text=load_fixture("display_set_screensaver.json"),
+        )
+
+    aresponses.add("127.0.0.2:4343", "/api/v2/device/display", "PUT", response_handler)
+
+    async with aiohttp.ClientSession() as session:
+        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
+        await demetriek.display(
+            screensaver_mode=ScreensaverMode.WHEN_DARK,
+            screensaver_mode_enabled=True,
+        )

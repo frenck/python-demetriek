@@ -41,21 +41,21 @@ class Audio(DataClassORJSONMixin):
     """Object holding the audio state of an LaMetric device."""
 
     available: bool = True
-    volume: int | None
-    volume_limit: Range | None
-    volume_range: Range | None
+    volume: int | None = None
+    volume_limit: Range | None = None
+    volume_range: Range | None = None
 
 
 @dataclass(kw_only=True)
 class Bluetooth(DataClassORJSONMixin):
     """Object holding the Bluetooth state of an LaMetric device."""
 
-    active: bool
-    address: str
+    active: bool | None = None
+    address: str | None = None
     available: bool
-    discoverable: bool
-    name: str
-    pairable: bool
+    discoverable: bool | None = None
+    name: str | None = None
+    pairable: bool | None = None
 
 
 @dataclass(kw_only=True)
@@ -79,11 +79,19 @@ class DisplayScreensaverWhenDark(DataClassORJSONMixin):
 
 
 @dataclass(kw_only=True)
+class DisplayScreensaverScreenOff(DataClassORJSONMixin):
+    """Object holding the screen off screensaver mode of an LaMetric device."""
+
+    enabled: bool
+
+
+@dataclass(kw_only=True)
 class DisplayScreensaverModes(DataClassORJSONMixin):
     """Object holding the screensaver modes of an LaMetric device."""
 
     time_based: DisplayScreensaverTimeBased
-    when_dark: DisplayScreensaverWhenDark
+    when_dark: DisplayScreensaverWhenDark | None = None
+    screen_off: DisplayScreensaverScreenOff | None = None
 
 
 @dataclass(kw_only=True)

@@ -142,9 +142,9 @@ class LaMetricDevice:
         response = await self._request("/api/v2/device")
 
         response["wifi"].update(
-            mac=response["wifi"].get("address"),
-            ssid=response["wifi"].get("essid"),
-            rssi=response["wifi"].get("strength"),
+            mac=response["wifi"].get("address", response["wifi"].get("mac")),
+            ssid=response["wifi"].get("essid", response["wifi"].get("ssid")),
+            rssi=response["wifi"].get("strength", response["wifi"].get("rssi")),
         )
 
         return Device.from_dict(response)

@@ -23,16 +23,19 @@ from .exceptions import (
     LaMetricError,
 )
 from .models import (
+    API,
     App,
     AppParameter,
     Audio,
     Bluetooth,
+    BluetoothLowEnergy,
     Chart,
     CloudDevice,
     Device,
     Display,
     DisplayScreensaver,
     DisplayScreensaverModes,
+    DisplayScreensaverScreenOff,
     DisplayScreensaverTimeBased,
     DisplayScreensaverWhenDark,
     Goal,
@@ -49,11 +52,13 @@ from .models import (
 )
 
 __all__ = [
+    "API",
     "AlarmSound",
     "App",
     "AppParameter",
     "Audio",
     "Bluetooth",
+    "BluetoothLowEnergy",
     "BrightnessMode",
     "Chart",
     "CloudDevice",
@@ -63,6 +68,7 @@ __all__ = [
     "Display",
     "DisplayScreensaver",
     "DisplayScreensaverModes",
+    "DisplayScreensaverScreenOff",
     "DisplayScreensaverTimeBased",
     "DisplayScreensaverWhenDark",
     "DisplayType",

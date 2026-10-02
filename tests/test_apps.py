@@ -134,10 +134,30 @@ async def test_app_action_without_params(
     )
     responses.post(url, status=201, body=load_fixture("app_action.json"))
 
-    await device.app_action(
+    data = await device.app_action(
         package="com.lametric.stopwatch",
         widget_id="5_com.lametric.stopwatch",
         action="stopwatch.reset",
     )
 
     assert request_json(responses, "POST", url) == {"id": "stopwatch.reset"}
+    assert data == {}
+
+
+async def test_app_action_returns_data(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test the data an app returns for an action is passed on."""
+    url = (
+        f"{DEVICE_URL}/api/v2/device/apps/com.lametric.radio"
+        "/widgets/3_com.lametric.radio/actions"
+    )
+    responses.post(url, status=201, body=load_fixture("app_action_data.json"))
+
+    data = await device.app_action(
+        package="com.lametric.radio",
+        widget_id="3_com.lametric.radio",
+        action="radio.state",
+    )
+
+    assert data == {"state": "playing"}

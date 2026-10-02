@@ -56,3 +56,17 @@ async def test_get_bluetooth_keeps_address(
     bluetooth = await device.bluetooth()
 
     assert bluetooth.address == "11:22:33:44:55:66"
+
+
+async def test_set_bluetooth_name(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test changing the Bluetooth name."""
+    responses.put(BLUETOOTH_URL, status=200, body=load_fixture("bluetooth_set.json"))
+
+    await device.bluetooth(active=True, name="Living room")
+
+    assert request_json(responses, "PUT", BLUETOOTH_URL) == {
+        "active": True,
+        "name": "Living room",
+    }

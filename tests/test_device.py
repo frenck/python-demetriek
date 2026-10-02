@@ -3,6 +3,7 @@
 import json
 import logging
 from dataclasses import asdict
+from datetime import UTC, datetime
 
 import pytest
 from aioresponses import aioresponses
@@ -358,3 +359,29 @@ def test_misspelled_sound_names_are_aliases() -> None:
     """Test the old misspelled sound names still resolve to the right sound."""
     assert NotificationSound.NETGATIVE1 is NotificationSound.NEGATIVE1
     assert NotificationSound("negative1").name == "NEGATIVE1"
+
+
+async def test_api(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test getting the API version and the available endpoints."""
+    responses.get(f"{DEVICE_URL}/api/v2", status=200, body=load_fixture("api.json"))
+
+    api = await device.api()
+
+    assert api.api_version == "2.3.0"
+    assert api.api_version >= "2.1.0"
+    assert api.endpoints["stream_url"] == f"{DEVICE_URL}/api/v2/device/stream"
+
+
+async def test_notification_updated(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test the time a notification was last updated is parsed."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications/25",
+        status=200,
+        body=load_fixture("notification_get.json"),
+    )
+
+    notification = await device.notification(notification_id=25)
+
+    assert notification.updated == datetime(2026, 9, 10, 17, 50, 38, tzinfo=UTC)

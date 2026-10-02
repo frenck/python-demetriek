@@ -8,8 +8,13 @@ from dataclasses import dataclass
 from typing import Any, Self
 
 import aiohttp
-import backoff
 from aiohttp import hdrs
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 from yarl import URL
 
 from .exceptions import (
@@ -30,19 +35,19 @@ class LaMetricCloud:
 
     _close_session: bool = False
 
-    @backoff.on_exception(
-        backoff.expo,
-        LaMetricConnectionError,
-        max_tries=3,
-        logger=None,
+    @retry(
+        retry=retry_if_exception_type(LaMetricConnectionError),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(),
+        reraise=True,
     )
     async def _request(
         self,
         uri: str = "",
     ) -> Any:
-        """Handle a request to the  LaMetric cloud.
+        """Handle a request to the LaMetric cloud.
 
-        A generic method for sending/handling HTTP requests done gainst
+        A generic method for sending/handling HTTP requests done against
         the LaMetric cloud.
 
         Args:
@@ -52,15 +57,15 @@ class LaMetricCloud:
         Returns:
         -------
             A Python dictionary (JSON decoded) with the response from the
-            LaMetric device.
+            LaMetric cloud.
 
         Raises:
         ------
-            LaMetricConnectionError: An error occurred while communication with
-                the LaMetric device.
+            LaMetricConnectionError: An error occurred while communicating with
+                the LaMetric cloud.
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
-                with the LaMetric device.
-            LaMetricError: Received an unexpected response from the LaMetric device.
+                with the LaMetric cloud.
+            LaMetricError: Received an unexpected response from the LaMetric cloud.
 
         """
         url = URL.build(scheme="https", host="developer.lametric.com", path=uri)
@@ -91,7 +96,7 @@ class LaMetricCloud:
                 )
             return await response.json()
 
-        except asyncio.TimeoutError as exception:
+        except TimeoutError as exception:
             msg = "Timeout occurred while connecting to the LaMetric cloud"
             raise LaMetricConnectionTimeoutError(msg) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:

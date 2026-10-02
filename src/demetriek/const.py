@@ -1,6 +1,6 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
-from enum import Enum
+from enum import StrEnum
 
 # The model the device reports is a hardware identifier, not a product name.
 # LaMetric TIME reports "LM 37X8" on firmware 2.x and "sa8" on 3.x.
@@ -11,14 +11,14 @@ DEVICE_MODELS: dict[str, str] = {
 }
 
 
-class BrightnessMode(str, Enum):
+class BrightnessMode(StrEnum):
     """Enum holding the available brightness modes."""
 
     AUTO = "auto"
     MANUAL = "manual"
 
 
-class DeviceMode(str, Enum):
+class DeviceMode(StrEnum):
     """Enum holding the available device modes."""
 
     AUTO = "auto"
@@ -27,7 +27,7 @@ class DeviceMode(str, Enum):
     SCHEDULE = "schedule"
 
 
-class DeviceState(str, Enum):
+class DeviceState(StrEnum):
     """Enum holding the available device states."""
 
     BANNED = "banned"
@@ -35,7 +35,7 @@ class DeviceState(str, Enum):
     NEW = "new"
 
 
-class DisplayType(str, Enum):
+class DisplayType(StrEnum):
     """Enum holding the available display types."""
 
     COLOR = "color"
@@ -45,7 +45,7 @@ class DisplayType(str, Enum):
     FULL_RGB = "full_rgb"
 
 
-class NotificationIconType(str, Enum):
+class NotificationIconType(StrEnum):
     """Enum holding the available icon types."""
 
     ALERT = "alert"
@@ -53,7 +53,7 @@ class NotificationIconType(str, Enum):
     NONE = "none"
 
 
-class NotificationPriority(str, Enum):
+class NotificationPriority(StrEnum):
     """Enum holding the available notification priorities."""
 
     CRITICAL = "critical"
@@ -61,14 +61,14 @@ class NotificationPriority(str, Enum):
     WARNING = "warning"
 
 
-class NotificationSoundCategory(str, Enum):
+class NotificationSoundCategory(StrEnum):
     """Enum holding the available notification sound categories."""
 
     ALARMS = "alarms"
     NOTIFICATIONS = "notifications"
 
 
-class AlarmSound(str, Enum):
+class AlarmSound(StrEnum):
     """Enum holding the available alarm sounds."""
 
     ALARM1 = "alarm1"
@@ -86,7 +86,7 @@ class AlarmSound(str, Enum):
     ALARM13 = "alarm13"
 
 
-class NotificationSound(str, Enum):
+class NotificationSound(StrEnum):
     """Enum holding the available notification sounds."""
 
     BICYCLE = "bicycle"
@@ -126,21 +126,21 @@ class NotificationSound(str, Enum):
     WIND_SHORT = "wind_short"
 
 
-class NotificationType(str, Enum):
+class NotificationType(StrEnum):
     """Enum holding the available notification types."""
 
     INTERNAL = "internal"
     EXTERNAL = "external"
 
 
-class ScreensaverMode(str, Enum):
+class ScreensaverMode(StrEnum):
     """Enum holding the available screensaver modes."""
 
     TIME_BASED = "time_based"
     WHEN_DARK = "when_dark"
 
 
-class WifiMode(str, Enum):
+class WifiMode(StrEnum):
     """Enum holding the available Wi-Fi modes."""
 
     DHCP = "dhcp"

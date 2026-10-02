@@ -3,12 +3,13 @@
 import json
 from dataclasses import asdict
 
-import aiohttp
 import pytest
-from aresponses import Response, ResponsesMockServer
+from aioresponses import aioresponses
 from syrupy.assertion import SnapshotAssertion
+from yarl import URL
 
 from demetriek import (
+    AlarmSound,
     Chart,
     DeviceMode,
     Goal,
@@ -19,6 +20,7 @@ from demetriek import (
     NotificationIconType,
     NotificationPriority,
     NotificationSound,
+    NotificationSoundCategory,
     Simple,
     Sound,
 )
@@ -26,7 +28,7 @@ from demetriek.const import (
     NotificationType,
 )
 
-from . import load_fixture
+from .conftest import DEVICE_URL, load_fixture, request_json
 
 
 @pytest.mark.parametrize(
@@ -40,66 +42,52 @@ from . import load_fixture
     ],
 )
 async def test_get_device(
-    aresponses: ResponsesMockServer, fixture: str, snapshot: SnapshotAssertion
+    responses: aioresponses,
+    device: LaMetricDevice,
+    fixture: str,
+    snapshot: SnapshotAssertion,
 ) -> None:
     """Test getting device information."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture(fixture),
-        ),
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device",
+        status=200,
+        body=load_fixture(fixture),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        device = await demetriek.device()
 
-    assert asdict(device) == snapshot
+    assert asdict(await device.device()) == snapshot
 
 
-async def test_notify(aresponses: ResponsesMockServer) -> None:
+async def test_notify(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test sending notification serialization."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/notifications",
-        "POST",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("notification.json"),
+    url = f"{DEVICE_URL}/api/v2/device/notifications"
+    responses.post(url, status=200, body=load_fixture("notification.json"))
+
+    notification = Notification(
+        icon_type=NotificationIconType.ALERT,
+        notification_type=NotificationType.EXTERNAL,
+        model=Model(
+            frames=[
+                Simple(text="Yeah", icon=18815),
+                Goal(
+                    icon=7956,
+                    data=GoalData(
+                        current=65,
+                        end=100,
+                        start=0,
+                        unit="%",
+                    ),
+                ),
+                Chart(data=[1, 2, 3, 4, 5, 4, 3, 2, 1]),
+            ],
+            sound=Sound(sound=NotificationSound.WIN),
         ),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        notification = Notification(
-            icon_type=NotificationIconType.ALERT,
-            notification_type=NotificationType.EXTERNAL,
-            model=Model(
-                frames=[
-                    Simple(text="Yeah", icon=18815),
-                    Goal(
-                        icon=7956,
-                        data=GoalData(
-                            current=65,
-                            end=100,
-                            start=0,
-                            unit="%",
-                        ),
-                    ),
-                    Chart(data=[1, 2, 3, 4, 5, 4, 3, 2, 1]),
-                ],
-                sound=Sound(sound=NotificationSound.WIN),
-            ),
-        )
-        response = await demetriek.notify(notification=notification)
+    response = await device.notify(notification=notification)
 
     # check response
     assert response == 1
     # check on serialized request if aliases are used and null values are removed
-    request = await aresponses.history[0].request.json()
+    request = request_json(responses, "POST", url)
     assert request["type"] == "external"
     assert request["icon_type"] == "alert"
     assert "life_time" not in request
@@ -112,23 +100,14 @@ async def test_notify(aresponses: ResponsesMockServer) -> None:
     assert request["model"]["frames"][2]["chartData"] == [1, 2, 3, 4, 5, 4, 3, 2, 1]
 
 
-async def test_set_device_mode(aresponses: ResponsesMockServer) -> None:
+async def test_set_device_mode(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test setting the device mode."""
+    url = f"{DEVICE_URL}/api/v2/device"
+    responses.put(url, status=200, body=load_fixture("device_set_mode.json"))
 
-    async def response_handler(request: aiohttp.ClientResponse) -> Response:
-        """Response handler for this test."""
-        assert await request.json() == {"mode": "kiosk"}
-        return aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("device_set_mode.json"),
-        )
+    await device.set_device_mode(mode=DeviceMode.KIOSK)
 
-    aresponses.add("127.0.0.2:4343", "/api/v2/device", "PUT", response_handler)
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        await demetriek.set_device_mode(mode=DeviceMode.KIOSK)
+    assert request_json(responses, "PUT", url) == {"mode": "kiosk"}
 
 
 @pytest.mark.parametrize(
@@ -141,50 +120,188 @@ async def test_set_device_mode(aresponses: ResponsesMockServer) -> None:
     ],
 )
 async def test_device_model_name(
-    aresponses: ResponsesMockServer,
+    responses: aioresponses,
+    device: LaMetricDevice,
     model: str,
     expected: str | None,
 ) -> None:
     """Test the reported model is translated to a product name."""
     payload = json.loads(load_fixture("device3.json"))
     payload["model"] = model
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=json.dumps(payload),
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        device = await demetriek.device()
+    responses.get(f"{DEVICE_URL}/api/v2/device", status=200, body=json.dumps(payload))
 
-    assert device.model_name == expected
+    info = await device.device()
+
+    assert info.model_name == expected
     # The raw identifier stays available; consumers match on it.
-    assert device.model == model
+    assert info.model == model
 
 
-async def test_notification(aresponses: ResponsesMockServer) -> None:
+async def test_notification(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test getting a single notification."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/notifications/25",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("notification_get.json"),
-        ),
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications/25",
+        status=200,
+        body=load_fixture("notification_get.json"),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        notification = await demetriek.notification(notification_id=25)
+
+    notification = await device.notification(notification_id=25)
 
     # The device sends the ID as a string.
     assert notification.notification_id == 25
     assert notification.notification_type is NotificationType.EXTERNAL
     assert notification.priority is NotificationPriority.INFO
     assert notification.model.frames == [Simple(text="fixture")]
+
+
+async def test_notification_queue(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test getting all notifications in the queue."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications",
+        status=200,
+        body=load_fixture("notification_queue.json"),
+    )
+
+    notifications = await device.notification_queue()
+
+    assert [notification.notification_id for notification in notifications] == [
+        25,
+        26,
+    ]
+    assert notifications[0].priority is NotificationPriority.CRITICAL
+
+
+async def test_notification_current(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test getting the notification currently on display."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications/current",
+        status=200,
+        body=load_fixture("notification_get.json"),
+    )
+
+    notification = await device.notification_current()
+
+    assert notification
+    assert notification.notification_id == 25
+
+
+async def test_notification_current_none(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test getting the current notification when nothing is on display."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications/current",
+        status=200,
+        body="{}",
+    )
+
+    assert await device.notification_current() is None
+
+
+async def test_dismiss_notification(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test dismissing a single notification."""
+    url = f"{DEVICE_URL}/api/v2/device/notifications/25"
+    responses.delete(url, status=200, body='{"success": true}')
+
+    await device.dismiss_notification(notification_id=25)
+
+    assert ("DELETE", URL(url)) in responses.requests
+
+
+async def test_dismiss_all_notifications(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test all notifications are dismissed, last in the queue first."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications",
+        status=200,
+        body=load_fixture("notification_queue.json"),
+    )
+    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/25", body="{}")
+    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/26", body="{}")
+
+    await device.dismiss_all_notifications()
+
+    dismissed = [url.path for method, url in responses.requests if method == "DELETE"]
+    assert dismissed == [
+        "/api/v2/device/notifications/26",
+        "/api/v2/device/notifications/25",
+    ]
+
+
+async def test_dismiss_all_notifications_empty_queue(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test nothing is dismissed when the queue is empty."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications",
+        status=200,
+        body="[]",
+    )
+
+    await device.dismiss_all_notifications()
+
+    assert all(method == "GET" for method, _ in responses.requests)
+
+
+async def test_dismiss_current_notification(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test dismissing the notification currently on display."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications/current",
+        status=200,
+        body=load_fixture("notification_get.json"),
+    )
+    url = f"{DEVICE_URL}/api/v2/device/notifications/25"
+    responses.delete(url, body="{}")
+
+    await device.dismiss_current_notification()
+
+    assert ("DELETE", URL(url)) in responses.requests
+
+
+async def test_dismiss_current_notification_none(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test nothing is dismissed when no notification is on display."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications/current",
+        status=200,
+        body="{}",
+    )
+
+    await device.dismiss_current_notification()
+
+    assert all(method == "GET" for method, _ in responses.requests)
+
+
+@pytest.mark.parametrize(
+    ("sound", "category"),
+    [
+        (AlarmSound.ALARM1, NotificationSoundCategory.ALARMS),
+        (NotificationSound.WIN, NotificationSoundCategory.NOTIFICATIONS),
+    ],
+)
+def test_sound_infers_category(
+    sound: AlarmSound | NotificationSound,
+    category: NotificationSoundCategory,
+) -> None:
+    """Test the sound category is inferred from the sound."""
+    assert Sound(sound=sound).category is category
+
+
+def test_sound_keeps_explicit_category() -> None:
+    """Test an explicitly set sound category is not overridden."""
+    sound = Sound(
+        sound=NotificationSound.WIN,
+        category=NotificationSoundCategory.ALARMS,
+    )
+
+    assert sound.category is NotificationSoundCategory.ALARMS

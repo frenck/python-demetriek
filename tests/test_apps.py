@@ -1,63 +1,43 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
-# pylint: disable=protected-access
-import aiohttp
-from aresponses import Response, ResponsesMockServer
+from aioresponses import aioresponses
 
 from demetriek import LaMetricDevice
 
-from . import load_fixture
+from .conftest import DEVICE_URL, load_fixture, request_json
 
 
-async def test_app_next(aresponses: ResponsesMockServer) -> None:
+async def test_app_next(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test switching to the next app."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/apps/next",
-        "PUT",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("apps_next.json"),
-        ),
+    responses.put(
+        f"{DEVICE_URL}/api/v2/device/apps/next",
+        status=200,
+        body=load_fixture("apps_next.json"),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        await demetriek.app_next()
+
+    await device.app_next()
 
 
-async def test_app_previous(aresponses: ResponsesMockServer) -> None:
+async def test_app_previous(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test switching to the previous app."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/apps/prev",
-        "PUT",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("apps_prev.json"),
-        ),
+    responses.put(
+        f"{DEVICE_URL}/api/v2/device/apps/prev",
+        status=200,
+        body=load_fixture("apps_prev.json"),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        await demetriek.app_previous()
+
+    await device.app_previous()
 
 
-async def test_apps(aresponses: ResponsesMockServer) -> None:
+async def test_apps(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test getting the installed apps."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/apps",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("apps.json"),
-        ),
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/apps",
+        status=200,
+        body=load_fixture("apps.json"),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        apps = await demetriek.apps()
+
+    apps = await device.apps()
 
     assert len(apps) == 6
     clock = apps["com.lametric.clock"]
@@ -90,21 +70,15 @@ async def test_apps(aresponses: ResponsesMockServer) -> None:
     assert apps["com.lametric.custommessage"].actions == {}
 
 
-async def test_app(aresponses: ResponsesMockServer) -> None:
+async def test_app(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test getting a single installed app."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/apps/com.lametric.clock",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("app.json"),
-        ),
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/apps/com.lametric.clock",
+        status=200,
+        body=load_fixture("app.json"),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        app = await demetriek.app(package="com.lametric.clock")
+
+    app = await device.app(package="com.lametric.clock")
 
     assert app.package == "com.lametric.clock"
     assert app.title == "Clock"
@@ -112,82 +86,58 @@ async def test_app(aresponses: ResponsesMockServer) -> None:
     assert app.widgets["1_com.lametric.clock"].visible is None
 
 
-async def test_activate_widget(aresponses: ResponsesMockServer) -> None:
+async def test_activate_widget(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test showing a specific widget."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/apps/com.lametric.clock/widgets/1_com.lametric.clock/activate",
-        "PUT",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("app_action.json"),
-        ),
+    responses.put(
+        f"{DEVICE_URL}/api/v2/device/apps/com.lametric.clock"
+        "/widgets/1_com.lametric.clock/activate",
+        status=200,
+        body=load_fixture("app_action.json"),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        await demetriek.activate_widget(
-            package="com.lametric.clock",
-            widget_id="1_com.lametric.clock",
-        )
+
+    await device.activate_widget(
+        package="com.lametric.clock",
+        widget_id="1_com.lametric.clock",
+    )
 
 
-async def test_app_action(aresponses: ResponsesMockServer) -> None:
+async def test_app_action(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test running an app action with parameters."""
-
-    async def response_handler(request: aiohttp.ClientResponse) -> Response:
-        """Response handler for this test."""
-        assert await request.json() == {
-            "id": "clock.alarm",
-            "params": {"enabled": True, "time": "07:00:00"},
-            "activate": True,
-        }
-        return aresponses.Response(
-            status=201,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("app_action.json"),
-        )
-
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/apps/com.lametric.clock/widgets/1_com.lametric.clock/actions",
-        "POST",
-        response_handler,
+    url = (
+        f"{DEVICE_URL}/api/v2/device/apps/com.lametric.clock"
+        "/widgets/1_com.lametric.clock/actions"
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        await demetriek.app_action(
-            package="com.lametric.clock",
-            widget_id="1_com.lametric.clock",
-            action="clock.alarm",
-            params={"enabled": True, "time": "07:00:00"},
-            activate=True,
-        )
+    responses.post(url, status=201, body=load_fixture("app_action.json"))
+
+    await device.app_action(
+        package="com.lametric.clock",
+        widget_id="1_com.lametric.clock",
+        action="clock.alarm",
+        params={"enabled": True, "time": "07:00:00"},
+        activate=True,
+    )
+
+    assert request_json(responses, "POST", url) == {
+        "id": "clock.alarm",
+        "params": {"enabled": True, "time": "07:00:00"},
+        "activate": True,
+    }
 
 
-async def test_app_action_without_params(aresponses: ResponsesMockServer) -> None:
+async def test_app_action_without_params(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
     """Test running an app action that takes no parameters."""
-
-    async def response_handler(request: aiohttp.ClientResponse) -> Response:
-        """Response handler for this test."""
-        assert await request.json() == {"id": "stopwatch.reset"}
-        return aresponses.Response(
-            status=201,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("app_action.json"),
-        )
-
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/apps/com.lametric.stopwatch"
-        "/widgets/5_com.lametric.stopwatch/actions",
-        "POST",
-        response_handler,
+    url = (
+        f"{DEVICE_URL}/api/v2/device/apps/com.lametric.stopwatch"
+        "/widgets/5_com.lametric.stopwatch/actions"
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        await demetriek.app_action(
-            package="com.lametric.stopwatch",
-            widget_id="5_com.lametric.stopwatch",
-            action="stopwatch.reset",
-        )
+    responses.post(url, status=201, body=load_fixture("app_action.json"))
+
+    await device.app_action(
+        package="com.lametric.stopwatch",
+        widget_id="5_com.lametric.stopwatch",
+        action="stopwatch.reset",
+    )
+
+    assert request_json(responses, "POST", url) == {"id": "stopwatch.reset"}

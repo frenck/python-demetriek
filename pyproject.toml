@@ -53,7 +53,7 @@ documentation = "https://github.com/frenck/python-demetriek"
 Changelog = "https://github.com/frenck/python-demetriek/releases"
 
 [tool.poetry.group.dev.dependencies]
-aresponses = "3.0.0"
+aioresponses = "0.7.9"
 codespell = "2.4.3"
 covdefaults = "2.3.0"
 coverage = { version = "7.16.2", extras = ["toml"] }
@@ -74,7 +74,7 @@ plugins = ["covdefaults"]
 source = ["demetriek"]
 
 [tool.coverage.report]
-fail_under = 90
+fail_under = 95
 show_missing = true
 
 [tool.ty.environment]

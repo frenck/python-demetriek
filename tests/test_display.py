@@ -1,33 +1,23 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
-# pylint: disable=protected-access
 from datetime import time
 
-import aiohttp
 import pytest
-from aresponses import Response, ResponsesMockServer
+from aioresponses import aioresponses
 
 from demetriek import LaMetricDevice
 from demetriek.const import BrightnessMode, DisplayType, ScreensaverMode
 
-from . import load_fixture
+from .conftest import DEVICE_URL, load_fixture, request_json
+
+DISPLAY_URL = f"{DEVICE_URL}/api/v2/device/display"
 
 
-async def test_get_display(aresponses: ResponsesMockServer) -> None:
+async def test_get_display(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test getting display information."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/display",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("display.json"),
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        display = await demetriek.display()
+    responses.get(DISPLAY_URL, status=200, body=load_fixture("display.json"))
+
+    display = await device.display()
 
     assert display
     assert display.brightness == 100
@@ -55,37 +45,25 @@ async def test_get_display(aresponses: ResponsesMockServer) -> None:
     assert display.screensaver.modes.time_based.local_end_time is None
 
 
-async def test_set_display(aresponses: ResponsesMockServer) -> None:
+async def test_set_display(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test setting display properties."""
+    responses.put(DISPLAY_URL, status=200, body=load_fixture("display_set.json"))
 
-    async def response_handler(request: aiohttp.ClientResponse) -> Response:
-        """Response handler for this test."""
-        data = await request.json()
-        assert data == {
-            "brightness": 99,
-            "brightness_mode": "manual",
-            "screensaver": {
-                "enabled": False,
-            },
-            "on": True,
-        }
-        return aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("display_set.json"),
-        )
+    display = await device.display(
+        brightness=99,
+        brightness_mode=BrightnessMode.MANUAL,
+        screensaver_enabled=False,
+        on=True,
+    )
 
-    aresponses.add("127.0.0.2:4343", "/api/v2/device/display", "PUT", response_handler)
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        display = await demetriek.display(
-            brightness=99,
-            brightness_mode=BrightnessMode.MANUAL,
-            screensaver_enabled=False,
-            on=True,
-        )
-
+    assert request_json(responses, "PUT", DISPLAY_URL) == {
+        "brightness": 99,
+        "brightness_mode": "manual",
+        "screensaver": {
+            "enabled": False,
+        },
+        "on": True,
+    }
     assert display
     assert display.brightness == 99
     assert display.brightness_mode is BrightnessMode.MANUAL
@@ -97,41 +75,33 @@ async def test_set_display(aresponses: ResponsesMockServer) -> None:
     assert display.on is True
 
 
-async def test_set_display_screensaver_mode(aresponses: ResponsesMockServer) -> None:
+async def test_set_display_screensaver_mode(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
     """Test setting the time based screensaver mode."""
+    responses.put(
+        DISPLAY_URL, status=200, body=load_fixture("display_set_screensaver.json")
+    )
 
-    async def response_handler(request: aiohttp.ClientResponse) -> Response:
-        """Response handler for this test."""
-        data = await request.json()
-        assert data == {
-            "screensaver": {
+    display = await device.display(
+        screensaver_enabled=True,
+        screensaver_mode=ScreensaverMode.TIME_BASED,
+        screensaver_mode_enabled=True,
+        screensaver_start_time=time(23, 0, 0),
+        screensaver_end_time=time(7, 0, 0),
+    )
+
+    assert request_json(responses, "PUT", DISPLAY_URL) == {
+        "screensaver": {
+            "enabled": True,
+            "mode": "time_based",
+            "mode_params": {
                 "enabled": True,
-                "mode": "time_based",
-                "mode_params": {
-                    "enabled": True,
-                    "start_time": "23:00:00",
-                    "end_time": "07:00:00",
-                },
+                "start_time": "23:00:00",
+                "end_time": "07:00:00",
             },
-        }
-        return aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("display_set_screensaver.json"),
-        )
-
-    aresponses.add("127.0.0.2:4343", "/api/v2/device/display", "PUT", response_handler)
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        display = await demetriek.display(
-            screensaver_enabled=True,
-            screensaver_mode=ScreensaverMode.TIME_BASED,
-            screensaver_mode_enabled=True,
-            screensaver_start_time=time(23, 0, 0),
-            screensaver_end_time=time(7, 0, 0),
-        )
-
+        },
+    }
     assert display.screensaver
     assert display.screensaver.modes
     assert display.screensaver.modes.time_based.enabled is True
@@ -145,25 +115,18 @@ async def test_set_display_screensaver_mode(aresponses: ResponsesMockServer) -> 
 
 
 async def test_set_display_screensaver_mode_without_params(
-    aresponses: ResponsesMockServer,
+    responses: aioresponses, device: LaMetricDevice
 ) -> None:
     """Test selecting a screensaver mode without any mode parameters."""
+    responses.put(
+        DISPLAY_URL, status=200, body=load_fixture("display_set_screensaver.json")
+    )
 
-    async def response_handler(request: aiohttp.ClientResponse) -> Response:
-        """Response handler for this test."""
-        data = await request.json()
-        assert data == {"screensaver": {"mode": "when_dark"}}
-        return aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("display_set_screensaver.json"),
-        )
+    await device.display(screensaver_mode=ScreensaverMode.WHEN_DARK)
 
-    aresponses.add("127.0.0.2:4343", "/api/v2/device/display", "PUT", response_handler)
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        await demetriek.display(screensaver_mode=ScreensaverMode.WHEN_DARK)
+    assert request_json(responses, "PUT", DISPLAY_URL) == {
+        "screensaver": {"mode": "when_dark"}
+    }
 
 
 @pytest.mark.parametrize(
@@ -190,26 +153,18 @@ async def test_set_display_screensaver_time_based_needs_both_times(
 
 
 async def test_set_display_screensaver_when_dark_needs_no_times(
-    aresponses: ResponsesMockServer,
+    responses: aioresponses, device: LaMetricDevice
 ) -> None:
     """Test the other modes are unaffected by the time based requirement."""
+    responses.put(
+        DISPLAY_URL, status=200, body=load_fixture("display_set_screensaver.json")
+    )
 
-    async def response_handler(request: aiohttp.ClientResponse) -> Response:
-        """Response handler for this test."""
-        assert await request.json() == {
-            "screensaver": {"mode": "when_dark", "mode_params": {"enabled": True}},
-        }
-        return aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("display_set_screensaver.json"),
-        )
+    await device.display(
+        screensaver_mode=ScreensaverMode.WHEN_DARK,
+        screensaver_mode_enabled=True,
+    )
 
-    aresponses.add("127.0.0.2:4343", "/api/v2/device/display", "PUT", response_handler)
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        await demetriek.display(
-            screensaver_mode=ScreensaverMode.WHEN_DARK,
-            screensaver_mode_enabled=True,
-        )
+    assert request_json(responses, "PUT", DISPLAY_URL) == {
+        "screensaver": {"mode": "when_dark", "mode_params": {"enabled": True}},
+    }

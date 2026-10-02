@@ -1,197 +1,136 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
 # pylint: disable=protected-access
-import asyncio
-
 import aiohttp
 import pytest
-from aresponses import Response, ResponsesMockServer
+from aioresponses import aioresponses
 
 from demetriek import (
     LaMetricAuthenticationError,
     LaMetricConnectionError,
+    LaMetricConnectionTimeoutError,
     LaMetricDevice,
     LaMetricError,
 )
 
+from .conftest import DEVICE_URL
 
-async def test_json_request(aresponses: ResponsesMockServer) -> None:
+
+async def test_json_request(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test JSON response is handled correctly."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text='{"status": "ok"}',
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        response = await demetriek._request("/")
-        assert response["status"] == "ok"
+    responses.get(f"{DEVICE_URL}/", status=200, body='{"status": "ok"}')
+
+    response = await device._request("/")
+    assert response["status"] == "ok"
 
 
-async def test_internal_session(aresponses: ResponsesMockServer) -> None:
-    """Test JSON response is handled correctly."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text='{"status": "ok"}',
-        ),
-    )
+async def test_internal_session(responses: aioresponses) -> None:
+    """Test the client creates and closes its own session."""
+    responses.get(f"{DEVICE_URL}/", status=200, body='{"status": "ok"}')
+
     async with LaMetricDevice(host="127.0.0.2", api_key="abc") as demetriek:
         response = await demetriek._request("/")
         assert response["status"] == "ok"
 
 
-async def test_post_request(aresponses: ResponsesMockServer) -> None:
+async def test_post_request(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test POST requests are handled correctly."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/",
-        "POST",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text='{"status": "ok"}',
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        response = await demetriek._request("/", method="POST")
-        assert response["status"] == "ok"
+    responses.post(f"{DEVICE_URL}/", status=200, body='{"status": "ok"}')
+
+    response = await device._request("/", method="POST")
+    assert response["status"] == "ok"
 
 
-async def test_backoff(aresponses: ResponsesMockServer) -> None:
-    """Test requests are handled with retries."""
+async def test_request_auth(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test the API key is sent using basic authentication."""
+    responses.get(f"{DEVICE_URL}/", status=200, body="{}")
 
-    async def response_handler(_: aiohttp.ClientResponse) -> Response:
-        await asyncio.sleep(0.2)
-        return aresponses.Response(body="Goodmorning!")
+    await device._request("/")
 
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/",
-        "GET",
-        response_handler,
-        repeat=2,
-    )
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text='{"status": "ok"}',
-        ),
-    )
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(
-            host="127.0.0.2",
-            api_key="abc",
-            session=session,
-            request_timeout=0.1,
-        )
-        response = await demetriek._request("/")
-        assert response["status"] == "ok"
+    request = next(iter(responses.requests.values()))[0]
+    assert request.kwargs["auth"] == aiohttp.BasicAuth("dev", "abc")
+    assert request.kwargs["headers"]["Accept"] == "application/json"
 
 
-async def test_timeout(aresponses: ResponsesMockServer) -> None:
-    """Test request timeouts."""
+async def test_retries(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test connection errors are retried before giving up."""
+    responses.get(f"{DEVICE_URL}/", exception=aiohttp.ClientError())
+    responses.get(f"{DEVICE_URL}/", exception=aiohttp.ClientError())
+    responses.get(f"{DEVICE_URL}/", status=200, body='{"status": "ok"}')
 
-    # Faking a timeout by sleeping
-    async def response_handler(_: aiohttp.ClientResponse) -> Response:
-        await asyncio.sleep(0.2)
-        return aresponses.Response(body="Goodmorning!")
-
-    # Backoff will try 3 times
-    aresponses.add("127.0.0.2:4343", "/", "GET", response_handler)
-    aresponses.add("127.0.0.2:4343", "/", "GET", response_handler)
-    aresponses.add("127.0.0.2:4343", "/", "GET", response_handler)
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(
-            host="127.0.0.2",
-            api_key="abc",
-            session=session,
-            request_timeout=0.1,
-        )
-        with pytest.raises(LaMetricConnectionError):
-            assert await demetriek._request("/")
+    response = await device._request("/")
+    assert response["status"] == "ok"
 
 
-async def test_http_error400(aresponses: ResponsesMockServer) -> None:
+async def test_connection_error(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test a connection error is raised once all retries are used up."""
+    responses.get(f"{DEVICE_URL}/", exception=aiohttp.ClientError(), repeat=True)
+
+    with pytest.raises(LaMetricConnectionError):
+        await device._request("/")
+
+    assert len(next(iter(responses.requests.values()))) == 3
+
+
+async def test_timeout(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test request timeouts are retried, then raised."""
+    responses.get(f"{DEVICE_URL}/", exception=TimeoutError(), repeat=True)
+
+    with pytest.raises(LaMetricConnectionTimeoutError):
+        await device._request("/")
+
+    assert len(next(iter(responses.requests.values()))) == 3
+
+
+async def test_http_error404(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test HTTP 404 response handling."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/",
-        "GET",
-        aresponses.Response(text="OMG PUPPIES!", status=404),
+    responses.get(
+        f"{DEVICE_URL}/",
+        status=404,
+        body="OMG PUPPIES!",
+        content_type="text/plain",
     )
 
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="example.com", api_key="abc", session=session)
-        with pytest.raises(LaMetricError):
-            assert await demetriek._request("/")
+    with pytest.raises(LaMetricError):
+        await device._request("/")
 
 
-async def test_http_error500(aresponses: ResponsesMockServer) -> None:
+async def test_http_error500(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test HTTP 500 response handling."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/",
-        "GET",
-        aresponses.Response(
-            body=b'{"status":"nok"}',
-            status=500,
-            headers={"Content-Type": "application/json"},
-        ),
+    responses.get(f"{DEVICE_URL}/", status=500, body='{"status":"nok"}')
+
+    with pytest.raises(LaMetricError):
+        await device._request("/")
+
+
+async def test_no_json_response(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test response handling when it is not a JSON response."""
+    responses.get(
+        f"{DEVICE_URL}/",
+        status=200,
+        body="Oh hi!",
+        content_type="text/html",
     )
 
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice("127.0.0.2", api_key="abc", session=session)
-        with pytest.raises(LaMetricError):
-            assert await demetriek._request("/")
+    with pytest.raises(LaMetricError):
+        await device._request("/")
 
 
-async def test_no_json_response(aresponses: ResponsesMockServer) -> None:
-    """Test response handling when its not a JSON response."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/",
-        "GET",
-        aresponses.Response(
-            body=b"Oh hi!",
-            status=200,
-            headers={"Content-Type": "text/html"},
-        ),
+@pytest.mark.parametrize("status", [401, 403])
+async def test_http_error401(
+    responses: aioresponses, device: LaMetricDevice, status: int
+) -> None:
+    """Test HTTP 401 and 403 response handling."""
+    responses.get(
+        f"{DEVICE_URL}/",
+        status=status,
+        body="Access denied!",
+        content_type="text/plain",
     )
 
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice("127.0.0.2", api_key="abc", session=session)
-        with pytest.raises(LaMetricError):
-            assert await demetriek._request("/")
-
-
-@pytest.mark.parametrize("status", {401, 403})
-async def test_http_error401(aresponses: ResponsesMockServer, status: int) -> None:
-    """Test HTTP 401 response handling."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/",
-        "GET",
-        aresponses.Response(text="Access denied!", status=status),
-    )
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice("127.0.0.2", api_key="abc", session=session)
-        with pytest.raises(LaMetricAuthenticationError):
-            assert await demetriek._request("/")
+    with pytest.raises(LaMetricAuthenticationError):
+        await device._request("/")

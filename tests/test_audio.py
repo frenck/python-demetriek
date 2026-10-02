@@ -1,29 +1,19 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
-# pylint: disable=protected-access
-import aiohttp
-from aresponses import Response, ResponsesMockServer
+from aioresponses import aioresponses
 
 from demetriek import LaMetricDevice
 
-from . import load_fixture
+from .conftest import DEVICE_URL, load_fixture, request_json
+
+AUDIO_URL = f"{DEVICE_URL}/api/v2/device/audio"
 
 
-async def test_get_audio(aresponses: ResponsesMockServer) -> None:
+async def test_get_audio(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test getting audio information."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/audio",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("audio.json"),
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        audio = await demetriek.audio()
+    responses.get(AUDIO_URL, status=200, body=load_fixture("audio.json"))
+
+    audio = await device.audio()
 
     assert audio
     assert audio.volume == 50
@@ -35,27 +25,13 @@ async def test_get_audio(aresponses: ResponsesMockServer) -> None:
     assert audio.volume_limit.range_max == 100
 
 
-async def test_set_audio(aresponses: ResponsesMockServer) -> None:
-    """Test setting display properties."""
+async def test_set_audio(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test setting audio properties."""
+    responses.put(AUDIO_URL, status=200, body=load_fixture("audio_set.json"))
 
-    async def response_handler(request: aiohttp.ClientResponse) -> Response:
-        """Response handler for this test."""
-        data = await request.json()
-        assert data == {
-            "volume": 99,
-        }
-        return aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("audio_set.json"),
-        )
+    audio = await device.audio(volume=99)
 
-    aresponses.add("127.0.0.2:4343", "/api/v2/device/audio", "PUT", response_handler)
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        audio = await demetriek.audio(volume=99)
-
+    assert request_json(responses, "PUT", AUDIO_URL) == {"volume": 99}
     assert audio
     assert audio.volume == 99
     assert audio.volume_range

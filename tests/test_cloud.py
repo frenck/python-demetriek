@@ -1,181 +1,121 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
 # pylint: disable=protected-access
-import asyncio
 from datetime import UTC, datetime
 from ipaddress import IPv4Address
 
 import aiohttp
 import pytest
-from aresponses import Response, ResponsesMockServer
+from aioresponses import aioresponses
 
-from demetriek import LaMetricCloud, LaMetricConnectionError, LaMetricError
+from demetriek import (
+    LaMetricCloud,
+    LaMetricConnectionError,
+    LaMetricConnectionTimeoutError,
+    LaMetricError,
+)
 from demetriek.const import DeviceState
 
-from . import load_fixture
+from .conftest import CLOUD_URL, load_fixture
 
 
-async def test_json_request(aresponses: ResponsesMockServer) -> None:
+async def test_json_request(responses: aioresponses, cloud: LaMetricCloud) -> None:
     """Test JSON response is handled correctly."""
-    aresponses.add(
-        "developer.lametric.com",
-        "/",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text='{"status": "ok"}',
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricCloud(token="abc", session=session)  # noqa: S106
-        response = await demetriek._request("/")
-        assert response["status"] == "ok"
+    responses.get(f"{CLOUD_URL}/", status=200, body='{"status": "ok"}')
+
+    response = await cloud._request("/")
+    assert response["status"] == "ok"
 
 
-async def test_internal_session(aresponses: ResponsesMockServer) -> None:
-    """Test JSON response is handled correctly."""
-    aresponses.add(
-        "developer.lametric.com",
-        "/",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text='{"status": "ok"}',
-        ),
-    )
+async def test_internal_session(responses: aioresponses) -> None:
+    """Test the client creates and closes its own session."""
+    responses.get(f"{CLOUD_URL}/", status=200, body='{"status": "ok"}')
+
     async with LaMetricCloud(token="abc") as demetriek:  # noqa: S106
         response = await demetriek._request("/")
         assert response["status"] == "ok"
 
 
-async def test_backoff(aresponses: ResponsesMockServer) -> None:
-    """Test requests are handled with retries."""
+async def test_request_auth(responses: aioresponses, cloud: LaMetricCloud) -> None:
+    """Test the token is sent as a bearer token."""
+    responses.get(f"{CLOUD_URL}/", status=200, body="{}")
 
-    async def response_handler(_: aiohttp.ClientResponse) -> Response:
-        await asyncio.sleep(0.2)
-        return aresponses.Response(body="Goodmorning!")
+    await cloud._request("/")
 
-    aresponses.add(
-        "developer.lametric.com",
-        "/",
-        "GET",
-        response_handler,
-        repeat=2,
-    )
-    aresponses.add(
-        "developer.lametric.com",
-        "/",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text='{"status": "ok"}',
-        ),
-    )
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricCloud(
-            token="abc",  # noqa: S106
-            session=session,
-            request_timeout=0.1,
-        )
-        response = await demetriek._request("/")
-        assert response["status"] == "ok"
+    request = next(iter(responses.requests.values()))[0]
+    assert request.kwargs["headers"]["Authorization"] == "Bearer abc"
+    assert request.kwargs["headers"]["Accept"] == "application/json"
 
 
-async def test_timeout(aresponses: ResponsesMockServer) -> None:
-    """Test request timeouts."""
+async def test_retries(responses: aioresponses, cloud: LaMetricCloud) -> None:
+    """Test connection errors are retried before giving up."""
+    responses.get(f"{CLOUD_URL}/", exception=aiohttp.ClientError())
+    responses.get(f"{CLOUD_URL}/", exception=aiohttp.ClientError())
+    responses.get(f"{CLOUD_URL}/", status=200, body='{"status": "ok"}')
 
-    # Faking a timeout by sleeping
-    async def response_handler(_: aiohttp.ClientResponse) -> Response:
-        await asyncio.sleep(0.2)
-        return aresponses.Response(body="Goodmorning!")
-
-    # Backoff will try 3 times
-    aresponses.add("developer.lametric.com", "/", "GET", response_handler)
-    aresponses.add("developer.lametric.com", "/", "GET", response_handler)
-    aresponses.add("developer.lametric.com", "/", "GET", response_handler)
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricCloud(
-            token="abc",  # noqa: S106
-            session=session,
-            request_timeout=0.1,
-        )
-        with pytest.raises(LaMetricConnectionError):
-            assert await demetriek._request("/")
+    response = await cloud._request("/")
+    assert response["status"] == "ok"
 
 
-async def test_http_error400(aresponses: ResponsesMockServer) -> None:
+async def test_connection_error(responses: aioresponses, cloud: LaMetricCloud) -> None:
+    """Test a connection error is raised once all retries are used up."""
+    responses.get(f"{CLOUD_URL}/", exception=aiohttp.ClientError(), repeat=True)
+
+    with pytest.raises(LaMetricConnectionError):
+        await cloud._request("/")
+
+    assert len(next(iter(responses.requests.values()))) == 3
+
+
+async def test_timeout(responses: aioresponses, cloud: LaMetricCloud) -> None:
+    """Test request timeouts are retried, then raised."""
+    responses.get(f"{CLOUD_URL}/", exception=TimeoutError(), repeat=True)
+
+    with pytest.raises(LaMetricConnectionTimeoutError):
+        await cloud._request("/")
+
+    assert len(next(iter(responses.requests.values()))) == 3
+
+
+async def test_http_error404(responses: aioresponses, cloud: LaMetricCloud) -> None:
     """Test HTTP 404 response handling."""
-    aresponses.add(
-        "developer.lametric.com",
-        "/",
-        "GET",
-        aresponses.Response(text="OMG PUPPIES!", status=404),
+    responses.get(
+        f"{CLOUD_URL}/",
+        status=404,
+        body="OMG PUPPIES!",
+        content_type="text/plain",
     )
 
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricCloud(token="abc", session=session)  # noqa: S106
-        with pytest.raises(LaMetricError):
-            assert await demetriek._request("/")
+    with pytest.raises(LaMetricError):
+        await cloud._request("/")
 
 
-async def test_http_error500(aresponses: ResponsesMockServer) -> None:
+async def test_http_error500(responses: aioresponses, cloud: LaMetricCloud) -> None:
     """Test HTTP 500 response handling."""
-    aresponses.add(
-        "developer.lametric.com",
-        "/",
-        "GET",
-        aresponses.Response(
-            body=b'{"status":"nok"}',
-            status=500,
-            headers={"Content-Type": "application/json"},
-        ),
+    responses.get(f"{CLOUD_URL}/", status=500, body='{"status":"nok"}')
+
+    with pytest.raises(LaMetricError):
+        await cloud._request("/")
+
+
+async def test_no_json_response(responses: aioresponses, cloud: LaMetricCloud) -> None:
+    """Test response handling when it is not a JSON response."""
+    responses.get(
+        f"{CLOUD_URL}/",
+        status=200,
+        body="Oh hi!",
+        content_type="text/html",
     )
 
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricCloud(token="abc", session=session)  # noqa: S106
-        with pytest.raises(LaMetricError):
-            assert await demetriek._request("/")
+    with pytest.raises(LaMetricError):
+        await cloud._request("/")
 
 
-async def test_no_json_response(aresponses: ResponsesMockServer) -> None:
-    """Test response handling when its not a JSON response."""
-    aresponses.add(
-        "developer.lametric.com",
-        "/",
-        "GET",
-        aresponses.Response(
-            body=b"Oh hi!",
-            status=200,
-            headers={"Content-Type": "text/html"},
-        ),
-    )
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricCloud(token="abc", session=session)  # noqa: S106
-        with pytest.raises(LaMetricError):
-            assert await demetriek._request("/")
-
-
-async def test_get_current_user(aresponses: ResponsesMockServer) -> None:
+async def test_get_current_user(responses: aioresponses, cloud: LaMetricCloud) -> None:
     """Test getting current logged in user information."""
-    aresponses.add(
-        "developer.lametric.com",
-        "/api/v2/me",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("me.json"),
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricCloud(token="abc", session=session)  # noqa: S106
-        user = await demetriek.current_user()
+    responses.get(f"{CLOUD_URL}/api/v2/me", status=200, body=load_fixture("me.json"))
+
+    user = await cloud.current_user()
 
     assert user
     assert user.apps_count == 1
@@ -186,21 +126,15 @@ async def test_get_current_user(aresponses: ResponsesMockServer) -> None:
     assert user.user_id == 1
 
 
-async def test_get_devices(aresponses: ResponsesMockServer) -> None:
+async def test_get_devices(responses: aioresponses, cloud: LaMetricCloud) -> None:
     """Test getting devices from the logged in account."""
-    aresponses.add(
-        "developer.lametric.com",
-        "/api/v2/users/me/devices",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("cloud_devices.json"),
-        ),
+    responses.get(
+        f"{CLOUD_URL}/api/v2/users/me/devices",
+        status=200,
+        body=load_fixture("cloud_devices.json"),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricCloud(token="abc", session=session)  # noqa: S106
-        devices = await demetriek.devices()
+
+    devices = await cloud.devices()
 
     assert devices
     assert len(devices) == 2
@@ -265,21 +199,15 @@ async def test_get_devices(aresponses: ResponsesMockServer) -> None:
     )
 
 
-async def test_get_device(aresponses: ResponsesMockServer) -> None:
+async def test_get_device(responses: aioresponses, cloud: LaMetricCloud) -> None:
     """Test getting a specific device from the logged in account."""
-    aresponses.add(
-        "developer.lametric.com",
-        "/api/v2/users/me/devices/42",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("cloud_device.json"),
-        ),
+    responses.get(
+        f"{CLOUD_URL}/api/v2/users/me/devices/42",
+        status=200,
+        body=load_fixture("cloud_device.json"),
     )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricCloud(token="abc", session=session)  # noqa: S106
-        device = await demetriek.device(device_id=42)
+
+    device = await cloud.device(device_id=42)
 
     assert device
     assert device.device_id == 42

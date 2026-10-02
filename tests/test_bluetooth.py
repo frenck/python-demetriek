@@ -1,29 +1,19 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
-# pylint: disable=protected-access
-import aiohttp
-from aresponses import Response, ResponsesMockServer
+from aioresponses import aioresponses
 
 from demetriek import LaMetricDevice
 
-from . import load_fixture
+from .conftest import DEVICE_URL, load_fixture, request_json
+
+BLUETOOTH_URL = f"{DEVICE_URL}/api/v2/device/bluetooth"
 
 
-async def test_get_bluetooth(aresponses: ResponsesMockServer) -> None:
+async def test_get_bluetooth(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test getting bluetooth information."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/bluetooth",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("bluetooth.json"),
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        bluetooth = await demetriek.bluetooth()
+    responses.get(BLUETOOTH_URL, status=200, body=load_fixture("bluetooth.json"))
+
+    bluetooth = await device.bluetooth()
 
     assert bluetooth
     assert bluetooth.active is True
@@ -34,32 +24,13 @@ async def test_get_bluetooth(aresponses: ResponsesMockServer) -> None:
     assert bluetooth.pairable is True
 
 
-async def test_set_audio(aresponses: ResponsesMockServer) -> None:
-    """Test setting display properties."""
+async def test_set_bluetooth(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test setting bluetooth properties."""
+    responses.put(BLUETOOTH_URL, status=200, body=load_fixture("bluetooth_set.json"))
 
-    async def response_handler(request: aiohttp.ClientResponse) -> Response:
-        """Response handler for this test."""
-        data = await request.json()
-        assert data == {
-            "active": False,
-        }
-        return aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("bluetooth_set.json"),
-        )
+    bluetooth = await device.bluetooth(active=False)
 
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/bluetooth",
-        "PUT",
-        response_handler,
-    )
-
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        bluetooth = await demetriek.bluetooth(active=False)
-
+    assert request_json(responses, "PUT", BLUETOOTH_URL) == {"active": False}
     assert bluetooth
     assert bluetooth.active is False
     assert bluetooth.address == "AA:BB:CC:DD:EE:FF"

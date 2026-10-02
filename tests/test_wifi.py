@@ -1,32 +1,22 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
-# pylint: disable=protected-access
 from ipaddress import IPv4Address
 
-import aiohttp
-from aresponses import ResponsesMockServer
+from aioresponses import aioresponses
 
 from demetriek import LaMetricDevice
 from demetriek.const import WifiMode
 
-from . import load_fixture
+from .conftest import DEVICE_URL, load_fixture
+
+WIFI_URL = f"{DEVICE_URL}/api/v2/device/wifi"
 
 
-async def test_get_wifi(aresponses: ResponsesMockServer) -> None:
-    """Test getting audio information."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/wifi",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("wifi.json"),
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        wifi = await demetriek.wifi()
+async def test_get_wifi(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test getting Wi-Fi information."""
+    responses.get(WIFI_URL, status=200, body=load_fixture("wifi.json"))
+
+    wifi = await device.wifi()
 
     assert wifi
     assert wifi.active is True
@@ -40,21 +30,11 @@ async def test_get_wifi(aresponses: ResponsesMockServer) -> None:
     assert wifi.rssi == 42
 
 
-async def test_get_wifi2(aresponses: ResponsesMockServer) -> None:
-    """Test getting audio information."""
-    aresponses.add(
-        "127.0.0.2:4343",
-        "/api/v2/device/wifi",
-        "GET",
-        aresponses.Response(
-            status=200,
-            headers={"Content-Type": "application/json"},
-            text=load_fixture("wifi2.json"),
-        ),
-    )
-    async with aiohttp.ClientSession() as session:
-        demetriek = LaMetricDevice(host="127.0.0.2", api_key="abc", session=session)
-        wifi = await demetriek.wifi()
+async def test_get_wifi2(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test getting Wi-Fi information without encryption and signal strength."""
+    responses.get(WIFI_URL, status=200, body=load_fixture("wifi2.json"))
+
+    wifi = await device.wifi()
 
     assert wifi
     assert wifi.active is True

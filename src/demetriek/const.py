@@ -100,6 +100,12 @@ class NotificationSound(StrEnum):
     LETTER_EMAIL = "letter_email"
     LOSE1 = "lose1"
     LOSE2 = "lose2"
+    NEGATIVE1 = "negative1"
+    NEGATIVE2 = "negative2"
+    NEGATIVE3 = "negative3"
+    NEGATIVE4 = "negative4"
+    NEGATIVE5 = "negative5"
+    # Misspelled names from older releases, kept as aliases.
     NETGATIVE1 = "negative1"
     NETGATIVE2 = "negative2"
     NETGATIVE3 = "negative3"

@@ -9,6 +9,7 @@ import pytest
 from aioresponses import aioresponses
 
 from demetriek import (
+    LaMetricAuthenticationError,
     LaMetricCloud,
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
@@ -96,6 +97,38 @@ async def test_http_error500(responses: aioresponses, cloud: LaMetricCloud) -> N
 
     with pytest.raises(LaMetricError):
         await cloud._request("/")
+
+
+@pytest.mark.parametrize("status", [401, 403])
+async def test_http_error401(
+    responses: aioresponses, cloud: LaMetricCloud, status: int
+) -> None:
+    """Test an invalid or expired token raises an authentication error."""
+    responses.get(
+        f"{CLOUD_URL}/",
+        status=status,
+        body='{"errors":[{"message":"Unauthorized"}]}',
+        repeat=True,
+    )
+
+    with pytest.raises(LaMetricAuthenticationError):
+        await cloud._request("/")
+
+    # Retrying a rejected token is pointless, it must fail right away.
+    assert len(next(iter(responses.requests.values()))) == 1
+
+
+async def test_http_error_not_retried(
+    responses: aioresponses, cloud: LaMetricCloud
+) -> None:
+    """Test an HTTP error is not mistaken for a connection error."""
+    responses.get(f"{CLOUD_URL}/", status=500, body='{"status":"nok"}', repeat=True)
+
+    with pytest.raises(LaMetricError) as excinfo:
+        await cloud._request("/")
+
+    assert not isinstance(excinfo.value, LaMetricConnectionError)
+    assert len(next(iter(responses.requests.values()))) == 1
 
 
 async def test_no_json_response(responses: aioresponses, cloud: LaMetricCloud) -> None:

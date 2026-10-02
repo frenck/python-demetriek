@@ -1,6 +1,7 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
 import json
+import logging
 from dataclasses import asdict
 
 import pytest
@@ -305,3 +306,55 @@ def test_sound_keeps_explicit_category() -> None:
     )
 
     assert sound.category is NotificationSoundCategory.ALARMS
+
+
+UNSUPPORTED_QUEUE = """[
+  {"id": "25", "model": {"frames": [{"text": "first"}]}, "type": "external"},
+  {"id": "26", "model": {"frames": [{"icon": 1, "unknown": true}]}, "type": "internal"}
+]"""
+
+
+async def test_notification_queue_skips_unsupported(
+    responses: aioresponses,
+    device: LaMetricDevice,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Test one unsupported notification does not break the whole queue."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications",
+        status=200,
+        body=UNSUPPORTED_QUEUE,
+    )
+
+    with caplog.at_level(logging.WARNING):
+        notifications = await device.notification_queue()
+
+    assert [notification.notification_id for notification in notifications] == [25]
+    assert "Skipping notification 26" in caplog.text
+
+
+async def test_dismiss_all_notifications_unsupported(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test notifications are dismissed, even the ones that do not parse."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications",
+        status=200,
+        body=UNSUPPORTED_QUEUE,
+    )
+    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/25", body="{}")
+    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/26", body="{}")
+
+    await device.dismiss_all_notifications()
+
+    dismissed = [url.path for method, url in responses.requests if method == "DELETE"]
+    assert dismissed == [
+        "/api/v2/device/notifications/26",
+        "/api/v2/device/notifications/25",
+    ]
+
+
+def test_misspelled_sound_names_are_aliases() -> None:
+    """Test the old misspelled sound names still resolve to the right sound."""
+    assert NotificationSound.NETGATIVE1 is NotificationSound.NEGATIVE1
+    assert NotificationSound("negative1").name == "NEGATIVE1"

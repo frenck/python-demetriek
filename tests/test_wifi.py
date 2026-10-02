@@ -46,3 +46,23 @@ async def test_get_wifi2(responses: aioresponses, device: LaMetricDevice) -> Non
     assert wifi.netmask == "255.255.255.0"
     assert wifi.ssid == "AllYourBaseAreBelongToUs"
     assert wifi.rssi is None
+
+
+async def test_get_wifi_keeps_device_names(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test values sent under the device endpoint names are not overwritten."""
+    responses.get(
+        WIFI_URL,
+        status=200,
+        body=(
+            '{"active": true, "available": true, "encryption": "WPA",'
+            ' "ip": "192.168.1.3", "mac": "AA:BB:CC:DD:EE:FF", "mode": "dhcp",'
+            ' "netmask": "255.255.255.0", "rssi": 77, "ssid": "Test"}'
+        ),
+    )
+
+    wifi = await device.wifi()
+
+    assert wifi.ip == IPv4Address("192.168.1.3")
+    assert wifi.rssi == 77

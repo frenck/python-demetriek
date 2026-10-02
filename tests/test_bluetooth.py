@@ -38,3 +38,21 @@ async def test_set_bluetooth(responses: aioresponses, device: LaMetricDevice) ->
     assert bluetooth.discoverable is True
     assert bluetooth.name == "LM1234"
     assert bluetooth.pairable is True
+
+
+async def test_get_bluetooth_keeps_address(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test an address sent by the device is not overwritten."""
+    responses.get(
+        BLUETOOTH_URL,
+        status=200,
+        body=(
+            '{"active": true, "address": "11:22:33:44:55:66", "available": true,'
+            ' "discoverable": true, "name": "LM1234", "pairable": true}'
+        ),
+    )
+
+    bluetooth = await device.bluetooth()
+
+    assert bluetooth.address == "11:22:33:44:55:66"

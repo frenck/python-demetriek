@@ -8,9 +8,14 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Self
 
 import aiohttp
-import backoff
 from aiohttp import hdrs
 from aiohttp.helpers import BasicAuth
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 from yarl import URL
 
 from .const import ScreensaverMode
@@ -47,11 +52,11 @@ class LaMetricDevice:
 
     _close_session: bool = False
 
-    @backoff.on_exception(
-        backoff.expo,
-        LaMetricConnectionError,
-        max_tries=3,
-        logger=None,
+    @retry(
+        retry=retry_if_exception_type(LaMetricConnectionError),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(),
+        reraise=True,
     )
     async def _request(
         self,
@@ -61,13 +66,13 @@ class LaMetricDevice:
     ) -> Any:
         """Handle a request to a LaMetric device.
 
-        A generic method for sending/handling HTTP requests done gainst
+        A generic method for sending/handling HTTP requests done against
         the LaMetric device.
 
         Args:
         ----
             uri: Request URI, for example `/api/v2/device`.
-            method: HTTP method to use for the request.E.g., "GET" or "POST".
+            method: HTTP method to use for the request, for example "GET" or "POST".
             data: Dictionary of data to send to the LaMetric device.
 
         Returns:
@@ -78,7 +83,7 @@ class LaMetricDevice:
         Raises:
         ------
             LaMetricAuthenticationError: If the API key is invalid.
-            LaMetricConnectionError: An error occurred while communication with
+            LaMetricConnectionError: An error occurred while communicating with
                 the LaMetric device.
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
                 with the LaMetric device.
@@ -111,7 +116,7 @@ class LaMetricDevice:
                 )
             return await response.json()
 
-        except asyncio.TimeoutError as exception:
+        except TimeoutError as exception:
             msg = (
                 "Timeout occurred while connecting to the LaMetric device"
                 f" at {self.host}"

@@ -2,7 +2,7 @@
 
 # pylint: disable=protected-access
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from ipaddress import IPv4Address
 
 import aiohttp
@@ -222,7 +222,7 @@ async def test_get_devices(aresponses: ResponsesMockServer) -> None:
         15,
         15,
         55,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
     assert devices[0].updated_at == datetime(
         2016,
@@ -231,7 +231,7 @@ async def test_get_devices(aresponses: ResponsesMockServer) -> None:
         18,
         27,
         13,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 
     assert devices[1].device_id == 42
@@ -252,7 +252,7 @@ async def test_get_devices(aresponses: ResponsesMockServer) -> None:
         15,
         15,
         55,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
     assert devices[1].updated_at == datetime(
         2016,
@@ -261,7 +261,7 @@ async def test_get_devices(aresponses: ResponsesMockServer) -> None:
         18,
         27,
         13,
-        tzinfo=timezone.utc,
+        tzinfo=UTC,
     )
 
 
@@ -293,5 +293,5 @@ async def test_get_device(aresponses: ResponsesMockServer) -> None:
     assert device.ip == IPv4Address("192.168.1.42")
     assert device.mac == "AA:BB:CC:DD:EE:42"
     assert device.ssid == "AllYourBaseAreBelongToUs"
-    assert device.created_at == datetime(2015, 3, 6, 15, 15, 55, tzinfo=timezone.utc)
-    assert device.updated_at == datetime(2016, 6, 14, 18, 27, 13, tzinfo=timezone.utc)
+    assert device.created_at == datetime(2015, 3, 6, 15, 15, 55, tzinfo=UTC)
+    assert device.updated_at == datetime(2016, 6, 14, 18, 27, 13, tzinfo=UTC)

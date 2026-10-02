@@ -8,7 +8,8 @@
 
 [![Build Status][build-shield]][build]
 [![Code Coverage][codecov-shield]][codecov]
-![Open in Dev Containers][devcontainer-shield]][devcontainer]
+[![Open in Dev Containers][devcontainer-shield]][devcontainer]
+[![OpenSSF Scorecard][scorecard-shield]][scorecard]
 
 [![Sponsor Frenck via GitHub Sponsors][github-sponsors-shield]][github-sponsors]
 
@@ -117,7 +118,8 @@ Thank you for being involved! :heart_eyes:
 The easiest way to start, is by opening a CodeSpace here on GitHub, or by using
 the [Dev Container][devcontainer] feature of Visual Studio Code.
 
-[![Open in Dev Containers][devcontainer-shield]][devcontainer]
+[[![Open in Dev Containers][devcontainer-shield]][devcontainer]
+[![OpenSSF Scorecard][scorecard-shield]][scorecard]
 
 This Python project is fully managed using the [Poetry][poetry] dependency
 manager. But also relies on the use of NodeJS for certain checks during
@@ -127,7 +129,7 @@ You need at least:
 
 - Python 3.11+
 - [Poetry][poetry-install]
-- NodeJS 18+ (including NPM)
+- NodeJS 24+ (including NPM)
 
 To install all packages, including all development requirements:
 
@@ -136,12 +138,12 @@ npm install
 poetry install
 ```
 
-As this repository uses the [pre-commit][pre-commit] framework, all changes
+As this repository uses the [prek][prek] framework, all changes
 are linted and tested with each commit. You can run all checks and tests
 manually, using the following command:
 
 ```bash
-poetry run pre-commit run --all-files
+poetry run prek run --all-files
 ```
 
 To run just the Python tests:
@@ -161,7 +163,7 @@ check [the contributor's page][contributors].
 
 MIT License
 
-Copyright (c) 2022 - 2025 Franck Nijhof
+Copyright (c) 2022-2026 Franck Nijhof
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -192,15 +194,17 @@ SOFTWARE.
 [github-sponsors-shield]: https://frenck.dev/wp-content/uploads/2019/12/github_sponsor.png
 [github-sponsors]: https://github.com/sponsors/frenck
 [license-shield]: https://img.shields.io/github/license/frenck/python-demetriek.svg
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2025.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2026.svg
 [patreon-shield]: https://frenck.dev/wp-content/uploads/2019/12/patreon.png
 [patreon]: https://www.patreon.com/frenck
 [poetry-install]: https://python-poetry.org/docs/#installation
 [poetry]: https://python-poetry.org
-[pre-commit]: https://pre-commit.com/
+[prek]: https://github.com/j178/prek
 [project-stage-shield]: https://img.shields.io/badge/project%20stage-experimental-yellow.svg
 [pypi]: https://pypi.org/project/demetriek/
 [python-versions-shield]: https://img.shields.io/pypi/pyversions/demetriek
 [releases-shield]: https://img.shields.io/github/release/frenck/python-demetriek.svg
 [releases]: https://github.com/frenck/python-demetriek/releases
+[scorecard]: https://scorecard.dev/viewer/?uri=github.com/frenck/python-demetriek
+[scorecard-shield]: https://api.scorecard.dev/projects/github.com/frenck/python-demetriek/badge
 [semver]: http://semver.org/spec/v2.0.0.html

@@ -1,0 +1,42 @@
+---
+name: Issue
+description: Report an issue with the LaMetric Python client.
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear description of what the issue is.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version of the LaMetric Python client.
+      placeholder: For example, 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: device-model
+    attributes:
+      label: Device model
+      description: The LaMetric device you are using.
+      placeholder: For example, LaMetric TIME, LaMetric SKY
+    validations:
+      required: false
+  - type: input
+    id: firmware-version
+    attributes:
+      label: Firmware version
+      description: The firmware version running on your device.
+      placeholder: For example, 2.3.9
+    validations:
+      required: false
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional information
+      description: Any logs, tracebacks, or other context.
+    validations:
+      required: false

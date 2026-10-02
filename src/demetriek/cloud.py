@@ -18,6 +18,7 @@ from tenacity import (
 from yarl import URL
 
 from .exceptions import (
+    LaMetricAuthenticationError,
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
@@ -61,6 +62,7 @@ class LaMetricCloud:
 
         Raises:
         ------
+            LaMetricAuthenticationError: If the token is invalid or expired.
             LaMetricConnectionError: An error occurred while communicating with
                 the LaMetric cloud.
             LaMetricConnectionTimeoutError: A timeout occurred while communicating
@@ -99,6 +101,15 @@ class LaMetricCloud:
         except TimeoutError as exception:
             msg = "Timeout occurred while connecting to the LaMetric cloud"
             raise LaMetricConnectionTimeoutError(msg) from exception
+        except aiohttp.ClientResponseError as exception:
+            # The cloud did answer, so this is not a connection problem and
+            # retrying will not help. An expired token must surface as an
+            # authentication error, so the caller can ask for a new one.
+            if exception.status in [401, 403]:
+                msg = "Authentication to the LaMetric cloud failed"
+                raise LaMetricAuthenticationError(msg) from exception
+            msg = "Error occurred while connecting to the LaMetric cloud"
+            raise LaMetricError(msg) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
             msg = "Error occurred while communicating with the LaMetric cloud"
             raise LaMetricConnectionError(msg) from exception

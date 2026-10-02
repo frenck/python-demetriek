@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import socket
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Self
@@ -10,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Self
 import aiohttp
 from aiohttp import hdrs
 from aiohttp.helpers import BasicAuth
+from mashumaro.exceptions import InvalidFieldValue, MissingField
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -39,6 +41,8 @@ if TYPE_CHECKING:
     from datetime import time
 
     from .const import BrightnessMode, DeviceMode
+
+_LOGGER = logging.getLogger(__package__)
 
 
 @dataclass
@@ -304,7 +308,7 @@ class LaMetricDevice:
         return Audio.from_dict(data)
 
     async def bluetooth(self, *, active: bool | None = None) -> Bluetooth:
-        """Get LaMetric device bluetooth information.
+        """Get or set the LaMetric device Bluetooth information.
 
         Args:
         ----
@@ -315,7 +319,7 @@ class LaMetricDevice:
             A Bluetooth object, with the latest or updated Bluetooth information.
 
         """
-        data: dict[str, int] = {}
+        data: dict[str, bool] = {}
 
         if active is not None:
             data["active"] = active
@@ -329,11 +333,13 @@ class LaMetricDevice:
             response = response["success"]["data"]
         else:
             response = await self._request("/api/v2/device/bluetooth")
-        response.update(address=response.get("mac"))
+        # The Bluetooth endpoint calls the address "mac", the device endpoint
+        # calls it "address". Only fill it in when the device left it out.
+        response.setdefault("address", response.get("mac"))
         return Bluetooth.from_dict(response)
 
     async def wifi(self) -> Wifi:
-        """Get LaMetric device bluetooth information.
+        """Get LaMetric device Wi-Fi information.
 
         Returns
         -------
@@ -341,7 +347,10 @@ class LaMetricDevice:
 
         """
         data = await self._request("/api/v2/device/wifi")
-        data.update(ip=data.get("ipv4"), rssi=data.get("signal_strength"))
+        # The Wi-Fi endpoint uses other names than the device endpoint does.
+        # Only fill them in when the device left them out.
+        data.setdefault("ip", data.get("ipv4"))
+        data.setdefault("rssi", data.get("signal_strength"))
         return Wifi.from_dict(data)
 
     async def apps(self) -> dict[str, App]:
@@ -478,17 +487,16 @@ class LaMetricDevice:
         )
 
     async def dismiss_all_notifications(self) -> None:
-        """Dismiss all notifications notification."""
-        if not (notifications := await self.notification_queue()):
-            return
+        """Dismiss all notifications in the queue."""
+        # Only the IDs are needed here, so skip parsing the notifications.
+        # A notification this library cannot parse must still be dismissed.
+        notifications = await self._request("/api/v2/device/notifications")
 
         # Dismiss notifications in reverse order to avoid them showing up
         # during rapid dismissal.
         for notification in reversed(notifications):
-            if notification.notification_id:
-                await self.dismiss_notification(
-                    notification_id=notification.notification_id,
-                )
+            if notification_id := notification.get("id"):
+                await self.dismiss_notification(notification_id=int(notification_id))
 
     async def dismiss_current_notification(self) -> None:
         """Dismiss current notification."""
@@ -532,6 +540,8 @@ class LaMetricDevice:
         """Get the list of all notifications in the queue.
 
         Notifications with higher priority will be first in the list.
+        Notifications this library cannot parse, for example ones with a frame
+        type it does not know yet, are logged and left out.
 
         Returns
         -------
@@ -539,7 +549,17 @@ class LaMetricDevice:
 
         """
         data = await self._request("/api/v2/device/notifications")
-        return [Notification.from_dict(notification) for notification in data]
+
+        notifications: list[Notification] = []
+        for notification in data:
+            try:
+                notifications.append(Notification.from_dict(notification))
+            except (InvalidFieldValue, MissingField):
+                _LOGGER.warning(
+                    "Skipping notification %s, its format is not supported",
+                    notification.get("id"),
+                )
+        return notifications
 
     async def close(self) -> None:
         """Close open client session."""

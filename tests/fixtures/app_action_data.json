@@ -1,0 +1,8 @@
+{
+  "success": {
+    "data": {
+      "state": "playing"
+    },
+    "path": "/api/v2/device/apps/com.lametric.radio/widgets/3_com.lametric.radio/actions"
+  }
+}

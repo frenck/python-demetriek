@@ -28,6 +28,7 @@ from .exceptions import (
     LaMetricError,
 )
 from .models import (
+    API,
     App,
     Audio,
     Bluetooth,
@@ -140,6 +141,17 @@ class LaMetricDevice:
                 f" at {self.host}"
             )
             raise LaMetricConnectionError(msg) from exception
+
+    async def api(self) -> API:
+        """Get the API version and the endpoints the device supports.
+
+        Returns
+        -------
+            An API object, with the API version and a map of endpoints.
+
+        """
+        response = await self._request("/api/v2")
+        return API.from_dict(response)
 
     async def device(self) -> Device:
         """Get LaMetric device information.
@@ -307,22 +319,31 @@ class LaMetricDevice:
         data = await self._request("/api/v2/device/audio")
         return Audio.from_dict(data)
 
-    async def bluetooth(self, *, active: bool | None = None) -> Bluetooth:
+    async def bluetooth(
+        self,
+        *,
+        active: bool | None = None,
+        name: str | None = None,
+    ) -> Bluetooth:
         """Get or set the LaMetric device Bluetooth information.
 
         Args:
         ----
             active: Whether to activate or deactivate Bluetooth.
+            name: New Bluetooth name of the device.
 
         Returns:
         -------
             A Bluetooth object, with the latest or updated Bluetooth information.
 
         """
-        data: dict[str, bool] = {}
+        data: dict[str, bool | str] = {}
 
         if active is not None:
             data["active"] = active
+
+        if name is not None:
+            data["name"] = name
 
         if data:
             response = await self._request(
@@ -405,7 +426,7 @@ class LaMetricDevice:
         action: str,
         params: dict[str, Any] | None = None,
         activate: bool | None = None,
-    ) -> None:
+    ) -> dict[str, Any]:
         """Run an action of an app on LaMetric Time.
 
         The actions an app offers, and the parameters they take, are
@@ -419,6 +440,10 @@ class LaMetricDevice:
             params: Parameters for the action.
             activate: Whether to show the widget when running the action.
 
+        Returns:
+        -------
+            The data the app returned for the action, which is often empty.
+
         """
         data: dict[str, Any] = {"id": action}
 
@@ -428,11 +453,12 @@ class LaMetricDevice:
         if activate is not None:
             data["activate"] = activate
 
-        await self._request(
+        response = await self._request(
             f"/api/v2/device/apps/{package}/widgets/{widget_id}/actions",
             method=hdrs.METH_POST,
             data=data,
         )
+        return response.get("success", {}).get("data", {})
 
     async def app_next(self) -> None:
         """Switch to the next app on LaMetric Time.

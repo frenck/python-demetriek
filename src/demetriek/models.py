@@ -47,6 +47,23 @@ class Audio(DataClassORJSONMixin):
 
 
 @dataclass(kw_only=True)
+class API(DataClassORJSONMixin):
+    """Object holding the API version and endpoints of an LaMetric device."""
+
+    api_version: AwesomeVersion
+    endpoints: dict[str, str] = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
+class BluetoothLowEnergy(DataClassORJSONMixin):
+    """Object holding the Bluetooth Low Energy state of an LaMetric device."""
+
+    active: bool | None = None
+    advertising: bool | None = None
+    connectable: bool | None = None
+
+
+@dataclass(kw_only=True)
 class Bluetooth(DataClassORJSONMixin):
     """Object holding the Bluetooth state of an LaMetric device."""
 
@@ -54,6 +71,7 @@ class Bluetooth(DataClassORJSONMixin):
     address: str | None = None
     available: bool
     discoverable: bool | None = None
+    low_energy: BluetoothLowEnergy | None = None
     name: str | None = None
     pairable: bool | None = None
 
@@ -345,6 +363,7 @@ class Notification(DataClassORJSONMixin):
         metadata=field_options(alias="type"),
     )
     priority: NotificationPriority | None = None
+    updated: datetime | None = None
 
     class Config(BaseConfig):
         """Notification model configuration."""

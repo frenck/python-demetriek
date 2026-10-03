@@ -1,6 +1,9 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
 # pylint: disable=protected-access
+import socket
+from unittest.mock import MagicMock
+
 import aiohttp
 import pytest
 from aioresponses import aioresponses
@@ -90,6 +93,48 @@ async def test_timeout(responses: aioresponses, device: LaMetricDevice) -> None:
         await device._request("/")
 
     assert len(next(iter(responses.requests.values()))) == 3
+
+
+@pytest.mark.parametrize(
+    "exception",
+    [
+        TimeoutError(),
+        aiohttp.ServerDisconnectedError(),
+    ],
+)
+async def test_change_not_retried_once_sent(
+    responses: aioresponses, device: LaMetricDevice, exception: Exception
+) -> None:
+    """Test a change is not repeated when it may have reached the device.
+
+    Repeating it could, for example, show the same notification twice.
+    """
+    responses.post(f"{DEVICE_URL}/", exception=exception, repeat=True)
+
+    with pytest.raises(LaMetricConnectionError):
+        await device._request("/", method="POST")
+
+    assert len(next(iter(responses.requests.values()))) == 1
+
+
+@pytest.mark.parametrize(
+    "exception",
+    [
+        aiohttp.ClientConnectorError(MagicMock(), OSError()),
+        socket.gaierror(),
+    ],
+)
+async def test_change_retried_when_not_sent(
+    responses: aioresponses, device: LaMetricDevice, exception: Exception
+) -> None:
+    """Test a change is retried when it never reached the device."""
+    responses.post(f"{DEVICE_URL}/", exception=exception)
+    responses.post(f"{DEVICE_URL}/", exception=exception)
+    responses.post(f"{DEVICE_URL}/", status=200, body='{"status": "ok"}')
+
+    response = await device._request("/", method="POST")
+
+    assert response["status"] == "ok"
 
 
 async def test_http_error404(responses: aioresponses, device: LaMetricDevice) -> None:

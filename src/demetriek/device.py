@@ -14,8 +14,8 @@ from aiohttp import hdrs
 from aiohttp.helpers import BasicAuth
 from mashumaro.exceptions import InvalidFieldValue, MissingField
 from tenacity import (
+    RetryCallState,
     retry,
-    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
 )
@@ -54,6 +54,29 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__package__)
 
 
+def _can_retry(retry_state: RetryCallState) -> bool:
+    """Tell whether a failed request to the device is safe to repeat.
+
+    Reading is always safe to repeat. A request that changes the device is
+    only repeated when it never reached the device. Otherwise a slow answer
+    could show the same notification twice, or skip past an app.
+    """
+    if retry_state.outcome is None:
+        return False
+
+    exception = retry_state.outcome.exception()
+    if not isinstance(exception, LaMetricConnectionError):
+        return False
+
+    # The method is keyword only on _request, so it always ends up here.
+    if retry_state.kwargs.get("method", hdrs.METH_GET) == hdrs.METH_GET:
+        return True
+
+    return isinstance(
+        exception.__cause__, (aiohttp.ClientConnectorError, socket.gaierror)
+    )
+
+
 @dataclass
 class LaMetricDevice:
     """Main class for handling connections with the LaMetric device."""
@@ -66,7 +89,7 @@ class LaMetricDevice:
     _close_session: bool = False
 
     @retry(
-        retry=retry_if_exception_type(LaMetricConnectionError),
+        retry=_can_retry,
         stop=stop_after_attempt(3),
         wait=wait_exponential(),
         reraise=True,
@@ -74,6 +97,7 @@ class LaMetricDevice:
     async def _request(
         self,
         uri: str = "",
+        *,
         method: str = hdrs.METH_GET,
         data: dict[str, Any] | None = None,
     ) -> Any:

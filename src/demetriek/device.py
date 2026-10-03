@@ -6,6 +6,7 @@ import asyncio
 import logging
 import socket
 from dataclasses import dataclass
+from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Self
 
 import aiohttp
@@ -26,6 +27,7 @@ from .exceptions import (
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
+    error_message,
 )
 from .models import (
     API,
@@ -112,9 +114,25 @@ class LaMetricDevice:
                     auth=BasicAuth("dev", self.api_key),
                     headers={"Accept": "application/json"},
                     json=data,
-                    raise_for_status=True,
                     ssl=False,
                 )
+                body = await response.text()
+
+            # The device did answer, so this is not a connection problem and
+            # retrying will not help. Pass on what the device says is wrong.
+            if response.status >= HTTPStatus.BAD_REQUEST:
+                reason = error_message(body) or response.reason
+                if response.status in [HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN]:
+                    msg = (
+                        f"Authentication to the LaMetric device at {self.host}"
+                        f" failed: {reason}"
+                    )
+                    raise LaMetricAuthenticationError(msg)
+                msg = (
+                    f"The LaMetric device at {self.host} returned an error"
+                    f" ({response.status}): {reason}"
+                )
+                raise LaMetricError(msg)
 
             content_type = response.headers.get("Content-Type", "")
             if "application/json" not in content_type:
@@ -130,14 +148,6 @@ class LaMetricDevice:
                 f" at {self.host}"
             )
             raise LaMetricConnectionTimeoutError(msg) from exception
-        except aiohttp.ClientResponseError as exception:
-            if exception.status in [401, 403]:
-                msg = f"Authentication to the LaMetric device at {self.host} failed"
-                raise LaMetricAuthenticationError(msg) from exception
-            msg = (
-                f"Error occurred while connecting to the LaMetric device at {self.host}"
-            )
-            raise LaMetricError(msg) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
             msg = (
                 "Error occurred while communicating with the LaMetric device"

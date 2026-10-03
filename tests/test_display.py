@@ -129,6 +129,24 @@ async def test_set_display_screensaver_mode_without_params(
     }
 
 
+async def test_set_display_screensaver_screen_off(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test selecting the screen off screensaver mode, which a SKY reports."""
+    responses.put(
+        DISPLAY_URL, status=200, body=load_fixture("display_set_screensaver.json")
+    )
+
+    await device.display(
+        screensaver_mode=ScreensaverMode.SCREEN_OFF,
+        screensaver_mode_enabled=True,
+    )
+
+    assert request_json(responses, "PUT", DISPLAY_URL) == {
+        "screensaver": {"mode": "screen_off", "mode_params": {"enabled": True}}
+    }
+
+
 @pytest.mark.parametrize(
     ("start_time", "end_time"),
     [

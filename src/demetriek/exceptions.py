@@ -1,5 +1,9 @@
 """Exceptions for LaMetric."""
 
+from __future__ import annotations
+
+import orjson
+
 
 class LaMetricError(Exception):
     """Generic LaMetric exception."""
@@ -15,3 +19,34 @@ class LaMetricAuthenticationError(LaMetricError):
 
 class LaMetricConnectionTimeoutError(LaMetricConnectionError):
     """LaMetric connection Timeout exception."""
+
+
+def error_message(body: str) -> str | None:
+    """Extract the error messages from an error response of the LaMetric API.
+
+    Both the device and the cloud answer errors with a body like
+    `{"errors": [{"message": "..."}]}`.
+
+    Args:
+    ----
+        body: The body of the error response.
+
+    Returns:
+    -------
+        The error messages joined together, or None when the body holds none.
+
+    """
+    try:
+        errors = orjson.loads(body).get("errors")
+    except (ValueError, AttributeError):
+        return None
+
+    if not isinstance(errors, list):
+        return None
+
+    messages = [
+        error["message"]
+        for error in errors
+        if isinstance(error, dict) and isinstance(error.get("message"), str)
+    ]
+    return "; ".join(messages) or None

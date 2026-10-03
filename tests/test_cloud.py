@@ -111,7 +111,7 @@ async def test_http_error401(
         repeat=True,
     )
 
-    with pytest.raises(LaMetricAuthenticationError):
+    with pytest.raises(LaMetricAuthenticationError, match="failed: Unauthorized"):
         await cloud._request("/")
 
     # Retrying a rejected token is pointless, it must fail right away.

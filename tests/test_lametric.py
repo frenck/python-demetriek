@@ -12,6 +12,7 @@ from demetriek import (
     LaMetricDevice,
     LaMetricError,
 )
+from demetriek.exceptions import error_message
 
 from .conftest import DEVICE_URL
 
@@ -134,3 +135,72 @@ async def test_http_error401(
 
     with pytest.raises(LaMetricAuthenticationError):
         await device._request("/")
+
+
+async def test_http_error_message(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test the error message of the device is passed on."""
+    responses.post(
+        f"{DEVICE_URL}/",
+        status=400,
+        body='{ "errors" : [ { "message" : "Missing required keys [frames]" } ] }',
+    )
+
+    with pytest.raises(
+        LaMetricError, match=r"\(400\): Missing required keys \[frames\]"
+    ):
+        await device._request("/", method="POST", data={"nope": True})
+
+    # The device answered, so there is nothing to retry.
+    assert len(next(iter(responses.requests.values()))) == 1
+
+
+async def test_http_error_without_message(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test the HTTP reason is used when the device gives no message."""
+    responses.get(
+        f"{DEVICE_URL}/",
+        status=404,
+        body="OMG PUPPIES!",
+        content_type="text/plain",
+        reason="Not Found",
+    )
+
+    with pytest.raises(LaMetricError, match=r"\(404\): Not Found"):
+        await device._request("/")
+
+
+async def test_http_error401_message(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test the authentication error carries the message of the device."""
+    responses.get(
+        f"{DEVICE_URL}/",
+        status=401,
+        body='{"errors":[{"message":"Authorization is required"}]}',
+    )
+
+    with pytest.raises(
+        LaMetricAuthenticationError, match="failed: Authorization is required"
+    ):
+        await device._request("/")
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        ('{"errors": [{"message": "Forbidden"}]}', "Forbidden"),
+        ('{"errors": [{"message": "One"}, {"message": "Two"}]}', "One; Two"),
+        ('{"errors": [{"code": 1}, "nonsense"]}', None),
+        ('{"errors": "nonsense"}', None),
+        ('{"errors": []}', None),
+        ('["errors"]', None),
+        ("OMG PUPPIES!", None),
+        ("", None),
+    ],
+)
+def test_error_message(body: str, expected: str | None) -> None:
+    """Test the error messages are pulled out of an error response."""
+    assert error_message(body) == expected

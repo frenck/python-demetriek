@@ -1,6 +1,7 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
 from aioresponses import aioresponses
+from yarl import URL
 
 from demetriek import Chart, Goal, GoalData, LaMetricDevice, Simple
 
@@ -9,24 +10,22 @@ from .conftest import DEVICE_URL, load_fixture, request_json
 
 async def test_app_next(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test switching to the next app."""
-    responses.put(
-        f"{DEVICE_URL}/api/v2/device/apps/next",
-        status=200,
-        body=load_fixture("apps_next.json"),
-    )
+    url = f"{DEVICE_URL}/api/v2/device/apps/next"
+    responses.put(url, status=200, body=load_fixture("apps_next.json"))
 
     await device.app_next()
+
+    assert ("PUT", URL(url)) in responses.requests
 
 
 async def test_app_previous(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test switching to the previous app."""
-    responses.put(
-        f"{DEVICE_URL}/api/v2/device/apps/prev",
-        status=200,
-        body=load_fixture("apps_prev.json"),
-    )
+    url = f"{DEVICE_URL}/api/v2/device/apps/prev"
+    responses.put(url, status=200, body=load_fixture("apps_prev.json"))
 
     await device.app_previous()
+
+    assert ("PUT", URL(url)) in responses.requests
 
 
 async def test_apps(responses: aioresponses, device: LaMetricDevice) -> None:
@@ -88,17 +87,18 @@ async def test_app(responses: aioresponses, device: LaMetricDevice) -> None:
 
 async def test_activate_widget(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test showing a specific widget."""
-    responses.put(
+    url = (
         f"{DEVICE_URL}/api/v2/device/apps/com.lametric.clock"
-        "/widgets/1_com.lametric.clock/activate",
-        status=200,
-        body=load_fixture("app_action.json"),
+        "/widgets/1_com.lametric.clock/activate"
     )
+    responses.put(url, status=200, body=load_fixture("app_action.json"))
 
     await device.activate_widget(
         package="com.lametric.clock",
         widget_id="1_com.lametric.clock",
     )
+
+    assert ("PUT", URL(url)) in responses.requests
 
 
 async def test_app_action(responses: aioresponses, device: LaMetricDevice) -> None:

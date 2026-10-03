@@ -40,3 +40,12 @@ async def test_set_audio(responses: aioresponses, device: LaMetricDevice) -> Non
     assert audio.volume_limit
     assert audio.volume_limit.range_min == 0
     assert audio.volume_limit.range_max == 100
+
+
+async def test_set_audio_mute(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test a volume of zero is sent, and not mistaken for no volume at all."""
+    responses.put(AUDIO_URL, status=200, body=load_fixture("audio_set.json"))
+
+    await device.audio(volume=0)
+
+    assert request_json(responses, "PUT", AUDIO_URL) == {"volume": 0}

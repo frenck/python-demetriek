@@ -13,6 +13,7 @@ from yarl import URL
 from demetriek import (
     AlarmSound,
     Chart,
+    Device,
     DeviceMode,
     Goal,
     GoalData,
@@ -61,7 +62,10 @@ async def test_get_device(
         body=load_fixture(fixture),
     )
 
-    assert asdict(await device.device()) == snapshot
+    result = await device.device()
+
+    assert asdict(result) == snapshot
+    assert Device.from_dict(result.to_dict()) == result
 
 
 async def test_notify(responses: aioresponses, device: LaMetricDevice) -> None:
@@ -287,6 +291,23 @@ async def test_dismiss_current_notification_none(
     await device.dismiss_current_notification()
 
     assert all(method == "GET" for method, _ in responses.requests)
+
+
+async def test_dismiss_current_notification_unsupported(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test the notification on display is dismissed, even if it does not parse."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications/current",
+        status=200,
+        body='{"id": "26", "model": {"frames": [{"icon": 1, "unknown": true}]}}',
+    )
+    url = f"{DEVICE_URL}/api/v2/device/notifications/26"
+    responses.delete(url, body=DISMISSED)
+
+    await device.dismiss_current_notification()
+
+    assert ("DELETE", URL(url)) in responses.requests
 
 
 @pytest.mark.parametrize(

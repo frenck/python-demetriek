@@ -72,6 +72,28 @@ class BluetoothLowEnergy(DataClassORJSONMixin):
 
 
 @dataclass(kw_only=True)
+class AuthChallenge(DataClassORJSONMixin):
+    """Object holding a challenge to get the API key of an LaMetric device."""
+
+    challenge_id: str = field(metadata=field_options(alias="uuid"))
+    duration: int
+
+    # Seen so far: "in-progress", "resolved", and "expired" once the time
+    # runs out. Kept as text, so a state not seen yet does not break parsing.
+    state: str
+
+    @property
+    def resolved(self) -> bool:
+        """Return whether the button on the device has been pressed."""
+        return self.state == "resolved"
+
+    class Config(BaseConfig):
+        """AuthChallenge model configuration."""
+
+        allow_deserialization_not_by_alias = True
+
+
+@dataclass(kw_only=True)
 class Bluetooth(DataClassORJSONMixin):
     """Object holding the Bluetooth state of an LaMetric device."""
 

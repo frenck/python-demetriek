@@ -1,0 +1,26 @@
+[
+  {
+    "group": "guest",
+    "key": "guest",
+    "name": "",
+    "origin": "local",
+    "status": "inactive",
+    "uuid": "guestuuid"
+  },
+  {
+    "group": "integration",
+    "key": "accountintegrationkey",
+    "name": "Account Integration Key",
+    "origin": "remote",
+    "status": "active",
+    "uuid": "integrationuuid"
+  },
+  {
+    "group": "web_admin",
+    "key": "webadminkey",
+    "name": "",
+    "origin": "local",
+    "status": "active",
+    "uuid": "7b3636393566323030"
+  }
+]

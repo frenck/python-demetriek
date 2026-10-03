@@ -398,7 +398,10 @@ class CloudDevice(DataClassORJSONMixin):
     ip: IPv4Address = field(metadata=field_options(alias="ipv4_internal"))
     mac: str
     name: str
+    # Only the device list reports the product code and state, a single
+    # device fetched by its ID comes without them.
+    product_code: str | None = None
     serial_number: str
     ssid: str = field(metadata=field_options(alias="wifi_ssid"))
-    state: DeviceState
+    state: DeviceState | None = None
     updated_at: datetime

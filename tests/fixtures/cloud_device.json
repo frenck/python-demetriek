@@ -1,7 +1,6 @@
 {
   "id": 42,
   "name": "The Answer",
-  "state": "configured",
   "serial_number": "SA140100002200W00B42",
   "api_key": "8adaa0c98278dbb1ecb218d1c3e11f9312317ba474ab3361f80c0bd4f13a6742",
   "ipv4_internal": "192.168.1.42",

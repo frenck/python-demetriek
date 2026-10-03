@@ -1,0 +1,956 @@
+# serializer version: 1
+# name: test_apps[lm37x8]
+  dict({
+    'com.lametric.clock': dict({
+      'actions': dict({
+        'clock.alarm': dict({
+          'enabled': dict({
+            'data_type': 'bool',
+            'format': None,
+            'name': 'enabled',
+            'required': False,
+          }),
+          'time': dict({
+            'data_type': 'string',
+            'format': '[0-9]{2}:[0-9]{2}(?::[0-9]{2})?',
+            'name': 'time',
+            'required': False,
+          }),
+          'wake_with_radio': dict({
+            'data_type': 'bool',
+            'format': None,
+            'name': 'wake_with_radio',
+            'required': False,
+          }),
+        }),
+        'clock.clockface': dict({
+          'icon': dict({
+            'data_type': 'string',
+            'format': None,
+            'name': 'icon',
+            'required': False,
+          }),
+          'type': dict({
+            'data_type': 'string',
+            'format': 'weather|page_a_day|custom|none',
+            'name': 'type',
+            'required': False,
+          }),
+        }),
+        'settings.dateFormats': dict({
+        }),
+      }),
+      'package': 'com.lametric.clock',
+      'title': 'Clock',
+      'triggers': dict({
+        'alarm': dict({
+          'snooze': dict({
+            'data_type': 'bool',
+            'format': None,
+            'name': 'snooze',
+            'required': None,
+          }),
+        }),
+      }),
+      'vendor': 'LaMetric',
+      'version': '2.8.10',
+      'version_code': '44',
+      'widgets': dict({
+        '08b8eac21074f8f7e5a29f2855ba8060': dict({
+          'index': 0,
+          'package': 'com.lametric.clock',
+          'settings': dict({
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+    'com.lametric.countdown': dict({
+      'actions': dict({
+        'countdown.configure': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': False,
+          }),
+          'start_now': dict({
+            'data_type': 'bool',
+            'format': None,
+            'name': 'start_now',
+            'required': False,
+          }),
+        }),
+        'countdown.pause': dict({
+        }),
+        'countdown.reset': dict({
+        }),
+        'countdown.start': dict({
+        }),
+      }),
+      'package': 'com.lametric.countdown',
+      'title': 'Timer',
+      'triggers': dict({
+        'finished': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+        'paused': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+        'reset': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+        'resumed': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+        'started': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+      }),
+      'vendor': 'LaMetric',
+      'version': '1.2.1',
+      'version_code': '19',
+      'widgets': dict({
+        'f03ea1ae1ae5f85b390b460f55ba8061': dict({
+          'index': 4,
+          'package': 'com.lametric.countdown',
+          'settings': dict({
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+    'com.lametric.diy.devwidget': dict({
+      'actions': dict({
+        'mqttSensor.discoveredDevices': dict({
+        }),
+        'mqttSensor.startDiscover': dict({
+        }),
+        'mqttSensor.stopDiscover': dict({
+        }),
+        'mqttSensor.trackedSensors': dict({
+        }),
+        'status': dict({
+        }),
+      }),
+      'package': 'com.lametric.diy.devwidget',
+      'title': 'My Data DIY',
+      'triggers': dict({
+      }),
+      'vendor': 'LaMetric',
+      'version': '2.0.15',
+      'version_code': '54',
+      'widgets': dict({
+        'db406c69bd5c4fec9a476eccef9683d6': dict({
+          'index': 5,
+          'package': 'com.lametric.diy.devwidget',
+          'settings': dict({
+            '_title': 'My Data DIY',
+          }),
+          'visible': True,
+        }),
+      }),
+    }),
+    'com.lametric.radio': dict({
+      'actions': dict({
+        'radio.next': dict({
+        }),
+        'radio.play': dict({
+        }),
+        'radio.play.at': dict({
+          'idx': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'idx',
+            'required': False,
+          }),
+        }),
+        'radio.prev': dict({
+        }),
+        'radio.state': dict({
+        }),
+        'radio.stop': dict({
+        }),
+      }),
+      'package': 'com.lametric.radio',
+      'title': 'Radio',
+      'triggers': dict({
+      }),
+      'vendor': 'LaMetric',
+      'version': '1.4.33',
+      'version_code': '87',
+      'widgets': dict({
+        '589ed1b3fcdaa5180bf4848e55ba8061': dict({
+          'index': 2,
+          'package': 'com.lametric.radio',
+          'settings': dict({
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+    'com.lametric.stopwatch': dict({
+      'actions': dict({
+        'stopwatch.pause': dict({
+        }),
+        'stopwatch.reset': dict({
+        }),
+        'stopwatch.start': dict({
+        }),
+      }),
+      'package': 'com.lametric.stopwatch',
+      'title': 'Stopwatch',
+      'triggers': dict({
+      }),
+      'vendor': 'LaMetric',
+      'version': '1.2.0',
+      'version_code': '16',
+      'widgets': dict({
+        'b1166a6059640bf76b9dfe0455ba8062': dict({
+          'index': 3,
+          'package': 'com.lametric.stopwatch',
+          'settings': dict({
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+    'com.lametric.weather': dict({
+      'actions': dict({
+        'weather.forecast': dict({
+        }),
+        'weather.get.cc': dict({
+        }),
+        'weather.setProduct': dict({
+        }),
+      }),
+      'package': 'com.lametric.weather',
+      'title': 'Weather',
+      'triggers': dict({
+      }),
+      'vendor': 'LaMetric',
+      'version': '1.2.3',
+      'version_code': '33',
+      'widgets': dict({
+        '380375c4b12c16e3adafb48355ba8061': dict({
+          'index': 1,
+          'package': 'com.lametric.weather',
+          'settings': dict({
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+  })
+# ---
+# name: test_apps[sa8]
+  dict({
+    'com.lametric.clock': dict({
+      'actions': dict({
+        'clock.alarm': dict({
+          'enabled': dict({
+            'data_type': 'bool',
+            'format': None,
+            'name': 'enabled',
+            'required': False,
+          }),
+          'time': dict({
+            'data_type': 'string',
+            'format': '[0-9]{2}:[0-9]{2}(?::[0-9]{2})?',
+            'name': 'time',
+            'required': False,
+          }),
+          'wake_with_radio': dict({
+            'data_type': 'bool',
+            'format': None,
+            'name': 'wake_with_radio',
+            'required': False,
+          }),
+        }),
+        'clock.clockface': dict({
+          'icon': dict({
+            'data_type': 'string',
+            'format': None,
+            'name': 'icon',
+            'required': False,
+          }),
+          'type': dict({
+            'data_type': 'string',
+            'format': 'weather|page_a_day|custom|none',
+            'name': 'type',
+            'required': False,
+          }),
+        }),
+        'settings.dateFormats': dict({
+        }),
+      }),
+      'package': 'com.lametric.clock',
+      'title': 'Clock',
+      'triggers': dict({
+        'alarm': dict({
+          'snooze': dict({
+            'data_type': 'bool',
+            'format': None,
+            'name': 'snooze',
+            'required': None,
+          }),
+        }),
+      }),
+      'vendor': 'LaMetric',
+      'version': '2.8.10',
+      'version_code': '44',
+      'widgets': dict({
+        '1_com.lametric.clock': dict({
+          'index': 0,
+          'package': 'com.lametric.clock',
+          'settings': dict({
+            '_title': 'Clock',
+          }),
+          'visible': True,
+        }),
+      }),
+    }),
+    'com.lametric.countdown': dict({
+      'actions': dict({
+        'countdown.configure': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': False,
+          }),
+          'start_now': dict({
+            'data_type': 'bool',
+            'format': None,
+            'name': 'start_now',
+            'required': False,
+          }),
+        }),
+        'countdown.pause': dict({
+        }),
+        'countdown.reset': dict({
+        }),
+        'countdown.start': dict({
+        }),
+      }),
+      'package': 'com.lametric.countdown',
+      'title': 'Timer',
+      'triggers': dict({
+        'finished': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+        'paused': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+        'reset': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+        'resumed': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+        'started': dict({
+          'duration': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'duration',
+            'required': None,
+          }),
+        }),
+      }),
+      'vendor': 'LaMetric',
+      'version': '1.2.1',
+      'version_code': '19',
+      'widgets': dict({
+        '6_com.lametric.countdown': dict({
+          'index': 5,
+          'package': 'com.lametric.countdown',
+          'settings': dict({
+            '_title': 'Timer',
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+    'com.lametric.custommessage': dict({
+      'actions': dict({
+      }),
+      'package': 'com.lametric.custommessage',
+      'title': 'Message Board',
+      'triggers': dict({
+      }),
+      'vendor': 'LaMetric',
+      'version': '1.2.11',
+      'version_code': '30',
+      'widgets': dict({
+        '3_com.lametric.custommessage': dict({
+          'index': 2,
+          'package': 'com.lametric.custommessage',
+          'settings': dict({
+            '_title': 'Message Board',
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+    'com.lametric.radio': dict({
+      'actions': dict({
+        'radio.next': dict({
+        }),
+        'radio.play': dict({
+        }),
+        'radio.play.at': dict({
+          'idx': dict({
+            'data_type': 'int',
+            'format': None,
+            'name': 'idx',
+            'required': False,
+          }),
+        }),
+        'radio.prev': dict({
+        }),
+        'radio.state': dict({
+        }),
+        'radio.stop': dict({
+        }),
+      }),
+      'package': 'com.lametric.radio',
+      'title': 'Radio',
+      'triggers': dict({
+      }),
+      'vendor': 'LaMetric',
+      'version': '1.4.33',
+      'version_code': '87',
+      'widgets': dict({
+        '4_com.lametric.radio': dict({
+          'index': 3,
+          'package': 'com.lametric.radio',
+          'settings': dict({
+            '_title': 'Radio',
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+    'com.lametric.stopwatch': dict({
+      'actions': dict({
+        'stopwatch.pause': dict({
+        }),
+        'stopwatch.reset': dict({
+        }),
+        'stopwatch.start': dict({
+        }),
+      }),
+      'package': 'com.lametric.stopwatch',
+      'title': 'Stopwatch',
+      'triggers': dict({
+      }),
+      'vendor': 'LaMetric',
+      'version': '1.2.0',
+      'version_code': '16',
+      'widgets': dict({
+        '5_com.lametric.stopwatch': dict({
+          'index': 4,
+          'package': 'com.lametric.stopwatch',
+          'settings': dict({
+            '_title': 'Stopwatch',
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+    'com.lametric.weather': dict({
+      'actions': dict({
+        'weather.forecast': dict({
+        }),
+        'weather.get.cc': dict({
+        }),
+        'weather.setProduct': dict({
+        }),
+      }),
+      'package': 'com.lametric.weather',
+      'title': 'Weather',
+      'triggers': dict({
+      }),
+      'vendor': 'LaMetric',
+      'version': '1.2.3',
+      'version_code': '33',
+      'widgets': dict({
+        '2_com.lametric.weather': dict({
+          'index': 1,
+          'package': 'com.lametric.weather',
+          'settings': dict({
+            '_title': 'Weather',
+          }),
+          'visible': False,
+        }),
+      }),
+    }),
+  })
+# ---
+# name: test_read[audio-lm37x8]
+  dict({
+    'available': True,
+    'volume': 46,
+    'volume_limit': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+    'volume_range': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+  })
+# ---
+# name: test_read[audio-sa8]
+  dict({
+    'available': True,
+    'volume': 46,
+    'volume_limit': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+    'volume_range': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+  })
+# ---
+# name: test_read[bluetooth-lm37x8]
+  dict({
+    'active': False,
+    'address': 'AA:BB:CC:DD:EE:FF',
+    'available': True,
+    'discoverable': True,
+    'low_energy': None,
+    'name': 'LM1234',
+    'pairable': True,
+  })
+# ---
+# name: test_read[bluetooth-sa8]
+  dict({
+    'active': False,
+    'address': 'AA:BB:CC:DD:EE:FF',
+    'available': True,
+    'discoverable': True,
+    'low_energy': None,
+    'name': 'LM1234',
+    'pairable': False,
+  })
+# ---
+# name: test_read[device-lm37x8]
+  dict({
+    'audio': dict({
+      'available': True,
+      'volume': 46,
+      'volume_limit': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'volume_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+    }),
+    'bluetooth': dict({
+      'active': False,
+      'address': 'AA:BB:CC:DD:EE:FF',
+      'available': True,
+      'discoverable': True,
+      'low_energy': dict({
+        'active': True,
+        'advertising': True,
+        'connectable': True,
+      }),
+      'name': 'LM1234',
+      'pairable': True,
+    }),
+    'device_id': '12345',
+    'display': dict({
+      'brightness': 100,
+      'brightness_limit': dict({
+        'range_max': 100,
+        'range_min': 2,
+      }),
+      'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+      'brightness_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'display_type': <DisplayType.MIXED: 'mixed'>,
+      'height': 8,
+      'on': None,
+      'screensaver': dict({
+        'enabled': True,
+        'modes': dict({
+          'screen_off': None,
+          'time_based': dict({
+            'enabled': False,
+            'end_time': None,
+            'local_end_time': None,
+            'local_start_time': None,
+            'start_time': None,
+          }),
+          'when_dark': dict({
+            'enabled': True,
+          }),
+        }),
+        'widget': '08b8eac21074f8f7e5a29f2855ba8060',
+      }),
+      'width': 37,
+    }),
+    'mode': <DeviceMode.MANUAL: 'manual'>,
+    'model': 'LM 37X8',
+    'name': 'Living room',
+    'os_version': '2.3.9',
+    'serial_number': 'SA000000000000W00BS9',
+    'update': None,
+    'wifi': dict({
+      'active': True,
+      'available': True,
+      'encryption': 'WPA',
+      'ip': IPv4Address('192.168.1.2'),
+      'mac': 'AA:BB:CC:DD:EE:FF',
+      'mode': <WifiMode.DHCP: 'dhcp'>,
+      'netmask': '255.255.255.0',
+      'rssi': 18,
+      'ssid': 'AllYourBaseAreBelongToUs',
+    }),
+  })
+# ---
+# name: test_read[device-sa8]
+  dict({
+    'audio': dict({
+      'available': True,
+      'volume': 46,
+      'volume_limit': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'volume_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+    }),
+    'bluetooth': dict({
+      'active': False,
+      'address': 'AA:BB:CC:DD:EE:FF',
+      'available': True,
+      'discoverable': True,
+      'low_energy': None,
+      'name': 'LM1234',
+      'pairable': False,
+    }),
+    'device_id': '12345',
+    'display': dict({
+      'brightness': 100,
+      'brightness_limit': dict({
+        'range_max': 100,
+        'range_min': 2,
+      }),
+      'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+      'brightness_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'display_type': <DisplayType.MIXED: 'mixed'>,
+      'height': 8,
+      'on': True,
+      'screensaver': dict({
+        'enabled': True,
+        'modes': dict({
+          'screen_off': None,
+          'time_based': dict({
+            'enabled': False,
+            'end_time': None,
+            'local_end_time': None,
+            'local_start_time': None,
+            'start_time': None,
+          }),
+          'when_dark': dict({
+            'enabled': True,
+          }),
+        }),
+        'widget': '1_com.lametric.clock',
+      }),
+      'width': 37,
+    }),
+    'mode': <DeviceMode.MANUAL: 'manual'>,
+    'model': 'sa8',
+    'name': 'Living room',
+    'os_version': '3.2.6',
+    'serial_number': 'SA000000000000W00BS9',
+    'update': None,
+    'wifi': dict({
+      'active': True,
+      'available': True,
+      'encryption': 'WPA',
+      'ip': IPv4Address('192.168.1.2'),
+      'mac': 'AA:BB:CC:DD:EE:FF',
+      'mode': <WifiMode.DHCP: 'dhcp'>,
+      'netmask': '255.255.255.0',
+      'rssi': 64,
+      'ssid': 'AllYourBaseAreBelongToUs',
+    }),
+  })
+# ---
+# name: test_read[display-lm37x8]
+  dict({
+    'brightness': 100,
+    'brightness_limit': dict({
+      'range_max': 100,
+      'range_min': 2,
+    }),
+    'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+    'brightness_range': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+    'display_type': <DisplayType.MIXED: 'mixed'>,
+    'height': 8,
+    'on': None,
+    'screensaver': dict({
+      'enabled': True,
+      'modes': dict({
+        'screen_off': None,
+        'time_based': dict({
+          'enabled': False,
+          'end_time': None,
+          'local_end_time': None,
+          'local_start_time': None,
+          'start_time': None,
+        }),
+        'when_dark': dict({
+          'enabled': True,
+        }),
+      }),
+      'widget': '08b8eac21074f8f7e5a29f2855ba8060',
+    }),
+    'width': 37,
+  })
+# ---
+# name: test_read[display-sa8]
+  dict({
+    'brightness': 100,
+    'brightness_limit': dict({
+      'range_max': 100,
+      'range_min': 2,
+    }),
+    'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+    'brightness_range': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+    'display_type': <DisplayType.MIXED: 'mixed'>,
+    'height': 8,
+    'on': True,
+    'screensaver': dict({
+      'enabled': True,
+      'modes': dict({
+        'screen_off': None,
+        'time_based': dict({
+          'enabled': False,
+          'end_time': None,
+          'local_end_time': None,
+          'local_start_time': None,
+          'start_time': None,
+        }),
+        'when_dark': dict({
+          'enabled': True,
+        }),
+      }),
+      'widget': '1_com.lametric.clock',
+    }),
+    'width': 37,
+  })
+# ---
+# name: test_read[wifi-lm37x8]
+  dict({
+    'active': True,
+    'available': True,
+    'encryption': 'WPA',
+    'ip': IPv4Address('192.168.1.2'),
+    'mac': 'AA:BB:CC:DD:EE:FF',
+    'mode': <WifiMode.DHCP: 'dhcp'>,
+    'netmask': '255.255.255.0',
+    'rssi': 18,
+    'ssid': 'AllYourBaseAreBelongToUs',
+  })
+# ---
+# name: test_read[wifi-sa8]
+  dict({
+    'active': True,
+    'available': True,
+    'encryption': 'WPA',
+    'ip': IPv4Address('192.168.1.2'),
+    'mac': 'AA:BB:CC:DD:EE:FF',
+    'mode': <WifiMode.DHCP: 'dhcp'>,
+    'netmask': '255.255.255.0',
+    'rssi': 64,
+    'ssid': 'AllYourBaseAreBelongToUs',
+  })
+# ---
+# name: test_write[audio-lm37x8]
+  dict({
+    'available': True,
+    'volume': 46,
+    'volume_limit': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+    'volume_range': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+  })
+# ---
+# name: test_write[audio-sa8]
+  dict({
+    'available': True,
+    'volume': 46,
+    'volume_limit': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+    'volume_range': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+  })
+# ---
+# name: test_write[bluetooth-lm37x8]
+  dict({
+    'active': False,
+    'address': 'AA:BB:CC:DD:EE:FF',
+    'available': True,
+    'discoverable': True,
+    'low_energy': None,
+    'name': 'LM1234',
+    'pairable': True,
+  })
+# ---
+# name: test_write[bluetooth-sa8]
+  dict({
+    'active': False,
+    'address': 'AA:BB:CC:DD:EE:FF',
+    'available': True,
+    'discoverable': True,
+    'low_energy': None,
+    'name': 'LM1234',
+    'pairable': False,
+  })
+# ---
+# name: test_write[display-lm37x8]
+  dict({
+    'brightness': 100,
+    'brightness_limit': dict({
+      'range_max': 100,
+      'range_min': 2,
+    }),
+    'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+    'brightness_range': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+    'display_type': <DisplayType.MIXED: 'mixed'>,
+    'height': 8,
+    'on': None,
+    'screensaver': dict({
+      'enabled': True,
+      'modes': dict({
+        'screen_off': None,
+        'time_based': dict({
+          'enabled': False,
+          'end_time': None,
+          'local_end_time': None,
+          'local_start_time': None,
+          'start_time': None,
+        }),
+        'when_dark': dict({
+          'enabled': True,
+        }),
+      }),
+      'widget': '08b8eac21074f8f7e5a29f2855ba8060',
+    }),
+    'width': 37,
+  })
+# ---
+# name: test_write[display-sa8]
+  dict({
+    'brightness': 100,
+    'brightness_limit': dict({
+      'range_max': 100,
+      'range_min': 2,
+    }),
+    'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+    'brightness_range': dict({
+      'range_max': 100,
+      'range_min': 0,
+    }),
+    'display_type': <DisplayType.MIXED: 'mixed'>,
+    'height': 8,
+    'on': True,
+    'screensaver': dict({
+      'enabled': True,
+      'modes': dict({
+        'screen_off': None,
+        'time_based': dict({
+          'enabled': False,
+          'end_time': None,
+          'local_end_time': None,
+          'local_start_time': None,
+          'start_time': None,
+        }),
+        'when_dark': dict({
+          'enabled': True,
+        }),
+      }),
+      'widget': '1_com.lametric.clock',
+    }),
+    'width': 37,
+  })
+# ---

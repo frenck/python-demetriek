@@ -1,0 +1,9 @@
+{
+  "active": false,
+  "address": "AA:BB:CC:DD:EE:FF",
+  "available": true,
+  "discoverable": true,
+  "mac": "AA:BB:CC:DD:EE:FF",
+  "name": "LM1234",
+  "pairable": false
+}

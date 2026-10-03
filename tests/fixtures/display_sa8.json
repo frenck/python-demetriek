@@ -1,0 +1,28 @@
+{
+  "brightness": 100,
+  "brightness_limit": {
+    "max": 100,
+    "min": 2
+  },
+  "brightness_mode": "auto",
+  "brightness_range": {
+    "max": 100,
+    "min": 0
+  },
+  "height": 8,
+  "on": true,
+  "screensaver": {
+    "enabled": true,
+    "modes": {
+      "time_based": {
+        "enabled": false
+      },
+      "when_dark": {
+        "enabled": true
+      }
+    },
+    "widget": "1_com.lametric.clock"
+  },
+  "type": "mixed",
+  "width": 37
+}

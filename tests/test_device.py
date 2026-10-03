@@ -136,6 +136,33 @@ async def test_get_device_wifi_not_an_object(
         await device.device()
 
 
+async def test_get_device_wifi_connecting(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test a device still connecting to its Wi-Fi does not fail the update.
+
+    A real TIME answered like this in home-assistant/core#97575. Only the
+    Wi-Fi details are missing, the rest of the device is still there.
+    """
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device",
+        status=200,
+        body=load_fixture("device_wifi_connecting.json"),
+    )
+
+    result = await device.device()
+
+    assert result.wifi.available is True
+    assert result.wifi.rssi == 18
+    assert result.wifi.active is None
+    assert result.wifi.ip is None
+    assert result.wifi.mac is None
+    assert result.wifi.netmask is None
+    assert result.wifi.ssid is None
+    assert result.display.brightness is not None
+    assert result.audio is not None
+
+
 async def test_get_device_update(
     responses: aioresponses, device: LaMetricDevice
 ) -> None:

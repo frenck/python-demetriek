@@ -18,6 +18,7 @@ from demetriek import (
     Goal,
     GoalData,
     LaMetricDevice,
+    LaMetricError,
     Model,
     Notification,
     NotificationIconType,
@@ -66,6 +67,34 @@ async def test_get_device(
 
     assert asdict(result) == snapshot
     assert Device.from_dict(result.to_dict()) == result
+
+
+async def test_get_device_unexpected_data(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test data the library does not understand raises a LaMetricError.
+
+    So a firmware update that changes a response is reported with what did
+    not fit, rather than with an error of the parsing library underneath.
+    """
+    responses.get(f"{DEVICE_URL}/api/v2/device", status=200, body='{"id": "1"}')
+
+    with pytest.raises(
+        LaMetricError, match=r"The LaMetric device at 127\.0\.0\.2"
+    ) as error:
+        await device.device()
+
+    assert 'Field "display" of type Display is missing in Device' in str(error.value)
+
+
+async def test_api_not_an_object(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test a response that is not an object at all raises a LaMetricError."""
+    responses.get(f"{DEVICE_URL}/api/v2", status=200, body="[]")
+
+    with pytest.raises(LaMetricError, match="should be a dict instance"):
+        await device.api()
 
 
 async def test_notify(responses: aioresponses, device: LaMetricDevice) -> None:

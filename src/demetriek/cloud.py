@@ -6,10 +6,12 @@ import asyncio
 import socket
 from dataclasses import dataclass, field
 from http import HTTPStatus
-from typing import Any, Self
+from typing import Any, Self, TypeVar
 
 import aiohttp
 from aiohttp import hdrs
+from mashumaro.exceptions import MissingField
+from mashumaro.mixins.orjson import DataClassORJSONMixin
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -26,6 +28,8 @@ from .exceptions import (
     error_message,
 )
 from .models import CloudDevice, User
+
+_ModelT = TypeVar("_ModelT", bound=DataClassORJSONMixin)
 
 
 @dataclass
@@ -133,6 +137,33 @@ class LaMetricCloud:
             msg = "Error occurred while communicating with the LaMetric cloud"
             raise LaMetricConnectionError(msg) from exception
 
+    def _parse(self, model: type[_ModelT], data: Any) -> _ModelT:
+        """Parse a response of the LaMetric cloud into a model.
+
+        Args:
+        ----
+            model: The model to parse the response into.
+            data: The JSON decoded response.
+
+        Returns:
+        -------
+            The model, filled with the response.
+
+        Raises:
+        ------
+            LaMetricError: The response does not fit the model, for example
+                because the cloud API changed.
+
+        """
+        try:
+            return model.from_dict(data)
+        except (MissingField, ValueError) as exception:
+            msg = (
+                "The LaMetric cloud answered with data this library does not"
+                f" understand: {exception}"
+            )
+            raise LaMetricError(msg) from exception
+
     async def current_user(self) -> User:
         """Get LaMetric user information.
 
@@ -142,7 +173,7 @@ class LaMetricCloud:
 
         """
         response = await self._request("/api/v2/users/me")
-        return User.from_dict(response)
+        return self._parse(User, response)
 
     async def devices(self) -> list[CloudDevice]:
         """Get LaMetric devices from the cloud.
@@ -153,7 +184,7 @@ class LaMetricCloud:
 
         """
         response = await self._request("/api/v2/users/me/devices")
-        return [CloudDevice.from_dict(cloud_device) for cloud_device in response]
+        return [self._parse(CloudDevice, cloud_device) for cloud_device in response]
 
     async def device(self, device_id: int) -> CloudDevice:
         """Get a LaMetric device from the cloud.
@@ -168,7 +199,7 @@ class LaMetricCloud:
 
         """
         response = await self._request(f"/api/v2/users/me/devices/{device_id}")
-        return CloudDevice.from_dict(response)
+        return self._parse(CloudDevice, response)
 
     async def rename_device(self, device_id: int, *, name: str) -> None:
         """Rename a LaMetric device in the cloud.

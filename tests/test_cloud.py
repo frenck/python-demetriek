@@ -183,6 +183,18 @@ async def test_get_current_user(responses: aioresponses, cloud: LaMetricCloud) -
     assert User.from_dict(user.to_dict()) == user
 
 
+async def test_get_current_user_unexpected_data(
+    responses: aioresponses, cloud: LaMetricCloud
+) -> None:
+    """Test data the library does not understand raises a LaMetricError."""
+    responses.get(f"{CLOUD_URL}/api/v2/users/me", status=200, body='{"id": 1}')
+
+    with pytest.raises(
+        LaMetricError, match='Field "apps_count" of type int is missing'
+    ):
+        await cloud.current_user()
+
+
 async def test_get_devices(responses: aioresponses, cloud: LaMetricCloud) -> None:
     """Test getting devices from the logged in account."""
     responses.get(

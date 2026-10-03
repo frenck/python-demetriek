@@ -22,7 +22,12 @@ from tenacity import (
 )
 from yarl import URL
 
-from .const import ScreensaverMode, StreamFillType, StreamRenderMode
+from .const import (
+    TRANSIENT_HTTP_STATUSES,
+    ScreensaverMode,
+    StreamFillType,
+    StreamRenderMode,
+)
 from .exceptions import (
     LaMetricAuthenticationError,
     LaMetricConnectionError,
@@ -76,7 +81,8 @@ def _can_retry(retry_state: RetryCallState) -> bool:
         return True
 
     return isinstance(
-        exception.__cause__, (aiohttp.ClientConnectorError, socket.gaierror)
+        exception.__cause__,
+        (aiohttp.ClientConnectorError, aiohttp.ConnectionTimeoutError, socket.gaierror),
     )
 
 
@@ -150,8 +156,15 @@ class LaMetricDevice:
 
             # The device did answer, so this is not a connection problem and
             # retrying will not help. Pass on what the device says is wrong.
+            # Unless it says it is briefly unable to answer at all.
             if response.status >= HTTPStatus.BAD_REQUEST:
                 reason = error_message(body) or response.reason
+                if response.status in TRANSIENT_HTTP_STATUSES:
+                    msg = (
+                        f"The LaMetric device at {self.host} is temporarily"
+                        f" unavailable ({response.status}): {reason}"
+                    )
+                    raise LaMetricConnectionError(msg)
                 if response.status in [HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN]:
                     msg = (
                         f"Authentication to the LaMetric device at {self.host}"

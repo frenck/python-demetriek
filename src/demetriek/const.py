@@ -1,6 +1,7 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
 from enum import IntEnum, StrEnum
+from http import HTTPStatus
 
 # The model the device reports is a hardware identifier, not a product name.
 # LaMetric TIME reports "LM 37X8" on firmware 2.x and "sa8" on 3.x.
@@ -8,6 +9,14 @@ DEVICE_MODELS: dict[str, str] = {
     "LM 37X8": "TIME",
     "sa5": "SKY",
     "sa8": "TIME",
+}
+
+# Statuses that say the server is briefly unable to answer, rather than that
+# something is wrong with the request. Those are worth another try.
+TRANSIENT_HTTP_STATUSES = {
+    HTTPStatus.BAD_GATEWAY,
+    HTTPStatus.SERVICE_UNAVAILABLE,
+    HTTPStatus.GATEWAY_TIMEOUT,
 }
 
 

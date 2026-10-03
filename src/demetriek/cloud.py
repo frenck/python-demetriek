@@ -20,6 +20,7 @@ from tenacity import (
 )
 from yarl import URL
 
+from .const import TRANSIENT_HTTP_STATUSES
 from .exceptions import (
     LaMetricAuthenticationError,
     LaMetricConnectionError,
@@ -103,10 +104,17 @@ class LaMetricCloud:
                 body = await response.text()
 
             # The cloud did answer, so this is not a connection problem and
-            # retrying will not help. An expired token must surface as an
+            # retrying will not help, unless it says it is briefly unable to
+            # answer at all. An expired token must surface as an
             # authentication error, so the caller can ask for a new one.
             if response.status >= HTTPStatus.BAD_REQUEST:
                 reason = error_message(body) or response.reason
+                if response.status in TRANSIENT_HTTP_STATUSES:
+                    msg = (
+                        "The LaMetric cloud is temporarily unavailable"
+                        f" ({response.status}): {reason}"
+                    )
+                    raise LaMetricConnectionError(msg)
                 if response.status in [HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN]:
                     msg = f"Authentication to the LaMetric cloud failed: {reason}"
                     raise LaMetricAuthenticationError(msg)

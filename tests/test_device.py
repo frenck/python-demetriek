@@ -41,6 +41,8 @@ from .conftest import DEVICE_URL, load_fixture, request_json
         "device3.json",
         "device_sa5.json",
         "device_sa5_1.json",
+        "device_lm37x8.json",
+        "device_sa8.json",
     ],
 )
 async def test_get_device(

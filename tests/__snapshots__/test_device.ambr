@@ -237,6 +237,86 @@
     }),
   })
 # ---
+# name: test_get_device[device_lm37x8.json]
+  dict({
+    'audio': dict({
+      'available': True,
+      'volume': 46,
+      'volume_limit': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'volume_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+    }),
+    'bluetooth': dict({
+      'active': False,
+      'address': 'AA:BB:CC:DD:EE:FF',
+      'available': True,
+      'discoverable': True,
+      'low_energy': dict({
+        'active': True,
+        'advertising': True,
+        'connectable': True,
+      }),
+      'name': 'LM1234',
+      'pairable': True,
+    }),
+    'device_id': '12345',
+    'display': dict({
+      'brightness': 100,
+      'brightness_limit': dict({
+        'range_max': 100,
+        'range_min': 2,
+      }),
+      'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+      'brightness_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'display_type': <DisplayType.MIXED: 'mixed'>,
+      'height': 8,
+      'on': None,
+      'screensaver': dict({
+        'enabled': True,
+        'modes': dict({
+          'screen_off': None,
+          'time_based': dict({
+            'enabled': False,
+            'end_time': None,
+            'local_end_time': None,
+            'local_start_time': None,
+            'start_time': None,
+          }),
+          'when_dark': dict({
+            'enabled': True,
+          }),
+        }),
+        'widget': '08b8eac21074f8f7e5a29f2855ba8060',
+      }),
+      'width': 37,
+    }),
+    'mode': <DeviceMode.MANUAL: 'manual'>,
+    'model': 'LM 37X8',
+    'name': 'Living room',
+    'os_version': '2.3.9',
+    'serial_number': 'SA000000000000W00BS9',
+    'update': None,
+    'wifi': dict({
+      'active': True,
+      'available': True,
+      'encryption': 'WPA',
+      'ip': IPv4Address('192.168.1.2'),
+      'mac': 'AA:BB:CC:DD:EE:FF',
+      'mode': <WifiMode.DHCP: 'dhcp'>,
+      'netmask': '255.255.255.0',
+      'rssi': 18,
+      'ssid': 'AllYourBaseAreBelongToUs',
+    }),
+  })
+# ---
 # name: test_get_device[device_sa5.json]
   dict({
     'audio': dict({
@@ -370,6 +450,82 @@
       'netmask': '255.255.255.0',
       'rssi': 58,
       'ssid': 'IoT',
+    }),
+  })
+# ---
+# name: test_get_device[device_sa8.json]
+  dict({
+    'audio': dict({
+      'available': True,
+      'volume': 46,
+      'volume_limit': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'volume_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+    }),
+    'bluetooth': dict({
+      'active': False,
+      'address': 'AA:BB:CC:DD:EE:FF',
+      'available': True,
+      'discoverable': True,
+      'low_energy': None,
+      'name': 'LM1234',
+      'pairable': False,
+    }),
+    'device_id': '12345',
+    'display': dict({
+      'brightness': 100,
+      'brightness_limit': dict({
+        'range_max': 100,
+        'range_min': 2,
+      }),
+      'brightness_mode': <BrightnessMode.AUTO: 'auto'>,
+      'brightness_range': dict({
+        'range_max': 100,
+        'range_min': 0,
+      }),
+      'display_type': <DisplayType.MIXED: 'mixed'>,
+      'height': 8,
+      'on': True,
+      'screensaver': dict({
+        'enabled': True,
+        'modes': dict({
+          'screen_off': None,
+          'time_based': dict({
+            'enabled': False,
+            'end_time': None,
+            'local_end_time': None,
+            'local_start_time': None,
+            'start_time': None,
+          }),
+          'when_dark': dict({
+            'enabled': True,
+          }),
+        }),
+        'widget': '1_com.lametric.clock',
+      }),
+      'width': 37,
+    }),
+    'mode': <DeviceMode.MANUAL: 'manual'>,
+    'model': 'sa8',
+    'name': 'Living room',
+    'os_version': '3.2.6',
+    'serial_number': 'SA000000000000W00BS9',
+    'update': None,
+    'wifi': dict({
+      'active': True,
+      'available': True,
+      'encryption': 'WPA',
+      'ip': IPv4Address('192.168.1.2'),
+      'mac': 'AA:BB:CC:DD:EE:FF',
+      'mode': <WifiMode.DHCP: 'dhcp'>,
+      'netmask': '255.255.255.0',
+      'rssi': 64,
+      'ssid': 'AllYourBaseAreBelongToUs',
     }),
   })
 # ---

@@ -45,6 +45,9 @@ class LaMetricCloud:
     async def _request(
         self,
         uri: str = "",
+        *,
+        method: str = hdrs.METH_GET,
+        data: dict[str, Any] | None = None,
     ) -> Any:
         """Handle a request to the LaMetric cloud.
 
@@ -54,6 +57,8 @@ class LaMetricCloud:
         Args:
         ----
             uri: Request URI, for example `/api/v2/users/me`.
+            method: HTTP method to use for the request, for example "GET" or "PUT".
+            data: Dictionary of data to send to the LaMetric cloud.
 
         Returns:
         -------
@@ -84,9 +89,10 @@ class LaMetricCloud:
         try:
             async with asyncio.timeout(self.request_timeout):
                 response = await self.session.request(
-                    hdrs.METH_GET,
+                    method,
                     url,
                     headers=headers,
+                    json=data,
                     raise_for_status=True,
                 )
 
@@ -150,6 +156,23 @@ class LaMetricCloud:
         """
         response = await self._request(f"/api/v2/users/me/devices/{device_id}")
         return CloudDevice.from_dict(response)
+
+    async def rename_device(self, device_id: int, *, name: str) -> None:
+        """Rename a LaMetric device in the cloud.
+
+        This needs a token with the `devices_write` scope.
+
+        Args:
+        ----
+            device_id: The ID of the device to rename.
+            name: The new name of the device.
+
+        """
+        await self._request(
+            f"/api/v2/users/me/devices/{device_id}",
+            method=hdrs.METH_PUT,
+            data={"name": name},
+        )
 
     async def close(self) -> None:
         """Close open client session."""

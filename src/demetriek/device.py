@@ -32,9 +32,12 @@ from .models import (
     App,
     Audio,
     Bluetooth,
+    Chart,
     Device,
     Display,
+    Goal,
     Notification,
+    Simple,
     Stream,
     StreamFadingPixels,
     StreamSession,
@@ -462,6 +465,33 @@ class LaMetricDevice:
             data=data,
         )
         return response.get("success", {}).get("data", {})
+
+    async def update_widget(
+        self,
+        *,
+        package: str,
+        widget_id: str,
+        frames: list[Chart | Goal | Simple],
+    ) -> None:
+        """Push new frames to a widget, for example one of the My Data DIY app.
+
+        The widget keeps showing these frames until the next update. The
+        device accepts any widget ID without complaint, so take it from
+        `apps()` or `app()` rather than guessing.
+
+        Args:
+        ----
+            package: Package name of the app the widget belongs to, for
+                example `com.lametric.diy.devwidget`.
+            widget_id: ID of the widget to update.
+            frames: The frames to show, in order.
+
+        """
+        await self._request(
+            f"/api/v2/widget/update/{package}/{widget_id}",
+            method=hdrs.METH_POST,
+            data={"frames": [frame.to_dict() for frame in frames]},
+        )
 
     async def app_next(self) -> None:
         """Switch to the next app on LaMetric Time.

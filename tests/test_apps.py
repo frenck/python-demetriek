@@ -2,7 +2,7 @@
 
 from aioresponses import aioresponses
 
-from demetriek import LaMetricDevice
+from demetriek import Chart, Goal, GoalData, LaMetricDevice, Simple
 
 from .conftest import DEVICE_URL, load_fixture, request_json
 
@@ -161,3 +161,34 @@ async def test_app_action_returns_data(
     )
 
     assert data == {"state": "playing"}
+
+
+async def test_update_widget(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test pushing frames to a widget, such as one of the My Data DIY app."""
+    url = (
+        f"{DEVICE_URL}/api/v2/widget/update/com.lametric.diy.devwidget"
+        "/db406c69bd5c4fec9a476eccef9683d6"
+    )
+    # The device answers a successful update with an empty JSON response.
+    responses.post(url, status=200, body="")
+
+    await device.update_widget(
+        package="com.lametric.diy.devwidget",
+        widget_id="db406c69bd5c4fec9a476eccef9683d6",
+        frames=[
+            Simple(text="21.5°C", icon=3219),
+            Goal(icon=7956, data=GoalData(start=0, current=42, end=100, unit="%")),
+            Chart(data=[1, 3, 5, 7, 5, 3, 1]),
+        ],
+    )
+
+    assert request_json(responses, "POST", url) == {
+        "frames": [
+            {"text": "21.5°C", "icon": 3219},
+            {
+                "goalData": {"start": 0, "current": 42, "end": 100, "unit": "%"},
+                "icon": 7956,
+            },
+            {"chartData": [1, 3, 5, 7, 5, 3, 1]},
+        ]
+    }

@@ -32,7 +32,6 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dynamic = ["dependencies"]
-packages = [{ include = "demetriek", from = "src" }]
 dependencies = [
   'aiohttp (>=3.13.0)',
   'awesomeversion (>=21.10.1)',
@@ -44,6 +43,7 @@ dependencies = [
 
 [tool.poetry]
 requires-poetry = '>=2.0'
+packages = [{ include = "demetriek", from = "src" }]
 
 [project.urls]
 homepage = "https://github.com/frenck/python-demetriek"

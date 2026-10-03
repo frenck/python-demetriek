@@ -34,6 +34,13 @@ async def test_internal_session(responses: aioresponses) -> None:
         assert response["status"] == "ok"
 
 
+def test_repr_hides_api_key() -> None:
+    """Test the API key does not leak when the client is printed or logged."""
+    demetriek = LaMetricDevice(host="127.0.0.2", api_key="supersecret")
+
+    assert "supersecret" not in repr(demetriek)
+
+
 async def test_post_request(responses: aioresponses, device: LaMetricDevice) -> None:
     """Test POST requests are handled correctly."""
     responses.post(f"{DEVICE_URL}/", status=200, body='{"status": "ok"}')

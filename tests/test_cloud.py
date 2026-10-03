@@ -9,11 +9,13 @@ import pytest
 from aioresponses import aioresponses
 
 from demetriek import (
+    CloudDevice,
     LaMetricAuthenticationError,
     LaMetricCloud,
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
+    User,
 )
 from demetriek.const import DeviceState
 
@@ -35,6 +37,13 @@ async def test_internal_session(responses: aioresponses) -> None:
     async with LaMetricCloud(token="abc") as demetriek:  # noqa: S106
         response = await demetriek._request("/")
         assert response["status"] == "ok"
+
+
+def test_repr_hides_token() -> None:
+    """Test the token does not leak when the client is printed or logged."""
+    demetriek = LaMetricCloud(token="supersecret")  # noqa: S106
+
+    assert "supersecret" not in repr(demetriek)
 
 
 async def test_request_auth(responses: aioresponses, cloud: LaMetricCloud) -> None:
@@ -159,6 +168,7 @@ async def test_get_current_user(responses: aioresponses, cloud: LaMetricCloud) -
     assert user.private_apps_count == 3
     assert user.private_device_count == 5
     assert user.user_id == 1
+    assert User.from_dict(user.to_dict()) == user
 
 
 async def test_get_devices(responses: aioresponses, cloud: LaMetricCloud) -> None:
@@ -260,6 +270,8 @@ async def test_get_device(responses: aioresponses, cloud: LaMetricCloud) -> None
     assert device.ssid == "AllYourBaseAreBelongToUs"
     assert device.created_at == datetime(2015, 3, 6, 15, 15, 55, tzinfo=UTC)
     assert device.updated_at == datetime(2016, 6, 14, 18, 27, 13, tzinfo=UTC)
+    assert CloudDevice.from_dict(device.to_dict()) == device
+    assert device.api_key not in repr(device)
 
 
 async def test_rename_device(responses: aioresponses, cloud: LaMetricCloud) -> None:

@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import socket
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Self
 
@@ -59,7 +59,7 @@ class LaMetricDevice:
     """Main class for handling connections with the LaMetric device."""
 
     host: str
-    api_key: str
+    api_key: str = field(repr=False)
     request_timeout: float = 8.0
     session: aiohttp.client.ClientSession | None = None
 
@@ -511,7 +511,7 @@ class LaMetricDevice:
         await self._request("/api/v2/device/apps/next", method=hdrs.METH_PUT)
 
     async def app_previous(self) -> None:
-        """Switch to the next app on LaMetric Time.
+        """Switch to the previous app on LaMetric Time.
 
         App order is controlled by the user via LaMetric Time app.
         """
@@ -569,12 +569,12 @@ class LaMetricDevice:
 
     async def dismiss_current_notification(self) -> None:
         """Dismiss current notification."""
-        if (
-            notification := await self.notification_current()
-        ) and notification.notification_id:
-            await self.dismiss_notification(
-                notification_id=notification.notification_id,
-            )
+        # Only the ID is needed here, so skip parsing the notification.
+        # A notification this library cannot parse must still be dismissed.
+        notification = await self._request("/api/v2/device/notifications/current")
+
+        if notification and (notification_id := notification.get("id")):
+            await self.dismiss_notification(notification_id=int(notification_id))
 
     async def notification(self, *, notification_id: int) -> Notification:
         """Get a single notification from the queue.
@@ -598,7 +598,8 @@ class LaMetricDevice:
 
         Returns
         -------
-            A Notification objects.
+            A Notification object, or None when no notification is
+            currently on display.
 
         """
         if data := await self._request("/api/v2/device/notifications/current"):

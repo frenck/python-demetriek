@@ -73,7 +73,7 @@ async def main():
                 ),
                 Chart(data=[1, 2, 3, 4, 5, 4, 3, 2, 1]),
             ],
-            sound=Sound(id=NotificationSound.WIN),
+            sound=Sound(sound=NotificationSound.WIN),
         ),
     )
 

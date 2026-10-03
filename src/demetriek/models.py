@@ -38,6 +38,11 @@ class Range(DataClassORJSONMixin):
     range_max: int = field(metadata=field_options(alias="max"))
     range_min: int = field(metadata=field_options(alias="min"))
 
+    class Config(BaseConfig):
+        """Range model configuration."""
+
+        allow_deserialization_not_by_alias = True
+
 
 @dataclass(kw_only=True)
 class Audio(DataClassORJSONMixin):
@@ -140,6 +145,11 @@ class Display(DataClassORJSONMixin):
     screensaver: DisplayScreensaver | None = None
     width: int
 
+    class Config(BaseConfig):
+        """Display model configuration."""
+
+        allow_deserialization_not_by_alias = True
+
 
 @dataclass(kw_only=True)
 class Wifi(DataClassORJSONMixin):
@@ -181,6 +191,11 @@ class Device(DataClassORJSONMixin):
         None if the reported model is not a known one.
         """
         return DEVICE_MODELS.get(self.model)
+
+    class Config(BaseConfig):
+        """Device model configuration."""
+
+        allow_deserialization_not_by_alias = True
 
 
 @dataclass(kw_only=True)
@@ -455,12 +470,17 @@ class User(DataClassORJSONMixin):
     private_device_count: int
     user_id: int = field(metadata=field_options(alias="id"))
 
+    class Config(BaseConfig):
+        """User model configuration."""
+
+        allow_deserialization_not_by_alias = True
+
 
 @dataclass(kw_only=True)
 class CloudDevice(DataClassORJSONMixin):
     """Object holding the state of an LaMetric device from the Cloud."""
 
-    api_key: str
+    api_key: str = field(repr=False)
     created_at: datetime
     device_id: int = field(metadata=field_options(alias="id"))
     ip: IPv4Address = field(metadata=field_options(alias="ipv4_internal"))
@@ -473,3 +493,8 @@ class CloudDevice(DataClassORJSONMixin):
     ssid: str = field(metadata=field_options(alias="wifi_ssid"))
     state: DeviceState | None = None
     updated_at: datetime
+
+    class Config(BaseConfig):
+        """CloudDevice model configuration."""
+
+        allow_deserialization_not_by_alias = True

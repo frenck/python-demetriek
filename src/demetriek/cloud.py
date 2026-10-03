@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import socket
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import Any, Self
 
@@ -32,7 +32,7 @@ from .models import CloudDevice, User
 class LaMetricCloud:
     """Main class for handling connections with the LaMetric cloud."""
 
-    token: str
+    token: str = field(repr=False)
     request_timeout: float = 8.0
     session: aiohttp.client.ClientSession | None = None
 

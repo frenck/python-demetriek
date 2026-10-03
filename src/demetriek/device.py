@@ -303,7 +303,10 @@ class LaMetricDevice:
             brightness: Brightness level to set.
             brightness_mode: Brightness mode to set.
             screensaver_enabled: Whether the screensaver should be enabled.
-            screensaver_mode: Screensaver mode to configure.
+            screensaver_mode: Screensaver mode to configure. Only pick a mode
+                the device reports in `screensaver.modes`. A TIME accepts
+                screen_off, but only switches its other modes off, leaving
+                the screensaver without any mode at all.
             screensaver_mode_enabled: Whether to enable the screensaver mode.
             screensaver_start_time: Time in GMT the screensaver starts,
                 for the time based mode.
@@ -712,8 +715,10 @@ class LaMetricDevice:
     async def stream(self) -> Stream:
         """Get the stream state and canvas size of the device.
 
-        Streaming needs API 2.3.0 or newer, and is not available on every
-        device. `api()` lists the stream endpoints when the device has them.
+        Streaming is not available on every device. An LM 37X8 TIME on
+        firmware 2.3.9 (API 2.3.0) does not have it and answers with a 404,
+        an sa8 TIME on firmware 3.2.6 (API 2.4.0) does. `api()` lists the
+        stream endpoints when the device has them.
 
         Returns
         -------

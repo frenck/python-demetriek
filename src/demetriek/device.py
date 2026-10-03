@@ -7,12 +7,13 @@ import logging
 import socket
 from dataclasses import dataclass, field
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, Self, TypeVar
 
 import aiohttp
 from aiohttp import hdrs
 from aiohttp.helpers import BasicAuth
-from mashumaro.exceptions import InvalidFieldValue, MissingField
+from mashumaro.exceptions import MissingField
+from mashumaro.mixins.orjson import DataClassORJSONMixin
 from tenacity import (
     RetryCallState,
     retry,
@@ -52,6 +53,8 @@ if TYPE_CHECKING:
     from .const import BrightnessMode, DeviceMode
 
 _LOGGER = logging.getLogger(__package__)
+
+_ModelT = TypeVar("_ModelT", bound=DataClassORJSONMixin)
 
 
 def _can_retry(retry_state: RetryCallState) -> bool:
@@ -188,6 +191,33 @@ class LaMetricDevice:
             )
             raise LaMetricConnectionError(msg) from exception
 
+    def _parse(self, model: type[_ModelT], data: Any) -> _ModelT:
+        """Parse a response of the LaMetric device into a model.
+
+        Args:
+        ----
+            model: The model to parse the response into.
+            data: The JSON decoded response.
+
+        Returns:
+        -------
+            The model, filled with the response.
+
+        Raises:
+        ------
+            LaMetricError: The response does not fit the model, for example
+                because a firmware update changed it.
+
+        """
+        try:
+            return model.from_dict(data)
+        except (MissingField, ValueError) as exception:
+            msg = (
+                f"The LaMetric device at {self.host} answered with data this"
+                f" library does not understand: {exception}"
+            )
+            raise LaMetricError(msg) from exception
+
     async def api(self) -> API:
         """Get the API version and the endpoints the device supports.
 
@@ -197,7 +227,7 @@ class LaMetricDevice:
 
         """
         response = await self._request("/api/v2")
-        return API.from_dict(response)
+        return self._parse(API, response)
 
     async def device(self) -> Device:
         """Get LaMetric device information.
@@ -209,13 +239,15 @@ class LaMetricDevice:
         """
         response = await self._request("/api/v2/device")
 
-        response["wifi"].update(
-            mac=response["wifi"].get("address", response["wifi"].get("mac")),
-            ssid=response["wifi"].get("essid", response["wifi"].get("ssid")),
-            rssi=response["wifi"].get("strength", response["wifi"].get("rssi")),
-        )
+        # Leave a missing Wi-Fi block to the parsing below, which reports it.
+        if isinstance(wifi := response.get("wifi"), dict):
+            wifi.update(
+                mac=wifi.get("address", wifi.get("mac")),
+                ssid=wifi.get("essid", wifi.get("ssid")),
+                rssi=wifi.get("strength", wifi.get("rssi")),
+            )
 
-        return Device.from_dict(response)
+        return self._parse(Device, response)
 
     async def set_device_mode(self, *, mode: DeviceMode) -> None:
         """Set the mode of the LaMetric device.
@@ -331,10 +363,10 @@ class LaMetricDevice:
                 method=hdrs.METH_PUT,
                 data=data,
             )
-            return Display.from_dict(response["success"]["data"])
+            return self._parse(Display, response["success"]["data"])
 
         response = await self._request("/api/v2/device/display")
-        return Display.from_dict(response)
+        return self._parse(Display, response)
 
     async def audio(self, *, volume: int | None = None) -> Audio:
         """Get or set LaMetric device audio information.
@@ -360,10 +392,10 @@ class LaMetricDevice:
                 method=hdrs.METH_PUT,
                 data=data,
             )
-            return Audio.from_dict(response["success"]["data"])
+            return self._parse(Audio, response["success"]["data"])
 
         data = await self._request("/api/v2/device/audio")
-        return Audio.from_dict(data)
+        return self._parse(Audio, data)
 
     async def bluetooth(
         self,
@@ -403,7 +435,7 @@ class LaMetricDevice:
         # The Bluetooth endpoint calls the address "mac", the device endpoint
         # calls it "address". Only fill it in when the device left it out.
         response.setdefault("address", response.get("mac"))
-        return Bluetooth.from_dict(response)
+        return self._parse(Bluetooth, response)
 
     async def wifi(self) -> Wifi:
         """Get LaMetric device Wi-Fi information.
@@ -418,7 +450,7 @@ class LaMetricDevice:
         # Only fill them in when the device left them out.
         data.setdefault("ip", data.get("ipv4"))
         data.setdefault("rssi", data.get("signal_strength"))
-        return Wifi.from_dict(data)
+        return self._parse(Wifi, data)
 
     async def apps(self) -> dict[str, App]:
         """Get the apps installed on LaMetric Time.
@@ -429,7 +461,7 @@ class LaMetricDevice:
 
         """
         response = await self._request("/api/v2/device/apps")
-        return {package: App.from_dict(app) for package, app in response.items()}
+        return {package: self._parse(App, app) for package, app in response.items()}
 
     async def app(self, *, package: str) -> App:
         """Get a single app installed on LaMetric Time.
@@ -448,7 +480,7 @@ class LaMetricDevice:
 
         """
         response = await self._request(f"/api/v2/device/apps/{package}")
-        return App.from_dict(response)
+        return self._parse(App, response)
 
     async def activate_widget(self, *, package: str, widget_id: str) -> None:
         """Show a specific widget of an app on LaMetric Time.
@@ -621,7 +653,7 @@ class LaMetricDevice:
         response = await self._request(
             f"/api/v2/device/notifications/{notification_id}",
         )
-        return Notification.from_dict(response)
+        return self._parse(Notification, response)
 
     async def notification_current(self) -> Notification | None:
         """Get the current notification.
@@ -633,7 +665,7 @@ class LaMetricDevice:
 
         """
         if data := await self._request("/api/v2/device/notifications/current"):
-            return Notification.from_dict(data)
+            return self._parse(Notification, data)
         return None
 
     async def notification_queue(self) -> list[Notification]:
@@ -653,8 +685,8 @@ class LaMetricDevice:
         notifications: list[Notification] = []
         for notification in data:
             try:
-                notifications.append(Notification.from_dict(notification))
-            except (InvalidFieldValue, MissingField):
+                notifications.append(self._parse(Notification, notification))
+            except LaMetricError:
                 _LOGGER.warning(
                     "Skipping notification %s, its format is not supported",
                     notification.get("id"),
@@ -673,7 +705,7 @@ class LaMetricDevice:
 
         """
         response = await self._request("/api/v2/device/stream")
-        return Stream.from_dict(response)
+        return self._parse(Stream, response)
 
     async def stream_start(
         self,
@@ -721,7 +753,7 @@ class LaMetricDevice:
 
         # The canvas settings come back nested, flatten them into the session.
         data = response["success"]["data"]
-        return StreamSession.from_dict({**data.pop("canvas"), **data})
+        return self._parse(StreamSession, {**data.pop("canvas"), **data})
 
     async def stream_stop(self) -> None:
         """Stop the stream, so the device returns to normal operation."""

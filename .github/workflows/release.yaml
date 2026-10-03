@@ -44,6 +44,8 @@ jobs:
           poetry config virtualenvs.in-project true
       - name: 🏗 Install dependencies
         run: poetry install --no-interaction
+      - name: 🚀 Run pytest
+        run: poetry run pytest tests
       - name: 🏗 Set package version
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}

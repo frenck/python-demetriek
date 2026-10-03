@@ -206,6 +206,10 @@ def test_build_lmsp_packet_encoded() -> None:
             [StreamArea(data=b"", width=-1, height=0)],
             "width must be between 0 and 65535, got -1",
         ),
+        (
+            [StreamArea(data=b"", width=0, height=-1)],
+            "height must be between 0 and 65535, got -1",
+        ),
     ],
 )
 def test_build_lmsp_packet_invalid(areas: list[StreamArea], match: str) -> None:
@@ -256,11 +260,16 @@ async def test_stream_send() -> None:
     assert packet == DOCUMENTED_HEADER + frame
 
 
-async def test_stream_connect_error(monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize(
+    "exception", [socket.gaierror(), OSError("Socket unavailable")]
+)
+async def test_stream_connect_error(
+    monkeypatch: pytest.MonkeyPatch, exception: OSError
+) -> None:
     """Test a socket that cannot be opened raises a connection error."""
 
     async def fail(*_args: object, **_kwargs: object) -> None:
-        raise socket.gaierror
+        raise exception
 
     monkeypatch.setattr(asyncio.get_running_loop(), "create_datagram_endpoint", fail)
     stream = LaMetricStream(host="lametric.invalid", session=_session(9999))

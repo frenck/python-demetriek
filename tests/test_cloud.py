@@ -184,8 +184,11 @@ async def test_invalid_json_response(
     """Test a broken JSON response raises a LaMetricError, without retrying."""
     responses.get(f"{CLOUD_URL}/", status=200, body="{", repeat=True)
 
-    with pytest.raises(LaMetricError, match="invalid JSON"):
+    with pytest.raises(LaMetricError, match="invalid JSON") as error:
         await cloud._request("/")
+
+    # Not a subclass, broken JSON is no reason to ask for new credentials.
+    assert error.type is LaMetricError
 
     assert len(next(iter(responses.requests.values()))) == 1
 
@@ -208,16 +211,41 @@ async def test_get_current_user(responses: aioresponses, cloud: LaMetricCloud) -
     assert User.from_dict(user.to_dict()) == user
 
 
+@pytest.mark.parametrize(
+    ("body", "match"),
+    [
+        ('{"id": 1}', 'Field "apps_count" of type int is missing'),
+        (
+            (
+                '{"id": 1, "apps_count": "many", "email": "", "name": "",'
+                ' "private_apps_count": 0, "private_device_count": 0}'
+            ),
+            'Field "apps_count" of type int in User has invalid value',
+        ),
+    ],
+)
 async def test_get_current_user_unexpected_data(
-    responses: aioresponses, cloud: LaMetricCloud
+    responses: aioresponses, cloud: LaMetricCloud, body: str, match: str
 ) -> None:
     """Test data the library does not understand raises a LaMetricError."""
-    responses.get(f"{CLOUD_URL}/api/v2/users/me", status=200, body='{"id": 1}')
+    responses.get(f"{CLOUD_URL}/api/v2/users/me", status=200, body=body)
 
-    with pytest.raises(
-        LaMetricError, match='Field "apps_count" of type int is missing'
-    ):
+    with pytest.raises(LaMetricError, match=match):
         await cloud.current_user()
+
+
+async def test_get_devices_unexpected_data(
+    responses: aioresponses, cloud: LaMetricCloud
+) -> None:
+    """Test a device the library does not understand raises a LaMetricError."""
+    responses.get(f"{CLOUD_URL}/api/v2/users/me/devices", status=200, body="[{}]")
+    responses.get(f"{CLOUD_URL}/api/v2/users/me/devices/42", status=200, body="{}")
+
+    with pytest.raises(LaMetricError, match="data this library does not understand"):
+        await cloud.devices()
+
+    with pytest.raises(LaMetricError, match="data this library does not understand"):
+        await cloud.device(device_id=42)
 
 
 async def test_get_devices(responses: aioresponses, cloud: LaMetricCloud) -> None:

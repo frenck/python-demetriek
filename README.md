@@ -15,13 +15,20 @@
 
 [![Support Frenck on Patreon][patreon-shield]][patreon]
 
-Asynchronous Python client for LaMetric TIME devices.
+Asynchronous Python client for LaMetric TIME and SKY devices.
 
 ## About
 
-This package allows you to control and monitor an LaMetric TIME device
+This package allows you to control and monitor LaMetric TIME and SKY devices
 programmatically, directly on your local network. It is mainly created to allow
 third-party programs to automate the behavior of the LaMetric device.
+
+Besides the local device API, it can:
+
+- Talk to the LaMetric cloud, to list the devices on your account, including
+  their local IP address and API key.
+- Stream frames straight to the screen of the device, see
+  [`examples/stream.py`](examples/stream.py).
 
 ## Installation
 
@@ -36,11 +43,11 @@ pip install demetriek
 
 import asyncio
 
-from demetriek import LaMetricDevice
-from demetriek.models import (
+from demetriek import (
+    Chart,
     Goal,
     GoalData,
-    Chart,
+    LaMetricDevice,
     Model,
     Notification,
     NotificationIconType,
@@ -84,6 +91,33 @@ async def main():
         # Raise audio volume... so we can hear the notification
         await lametric.audio(volume=100)
         await lametric.notify(notification=notification)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Cloud
+
+The cloud client needs an OAuth2 access token for your LaMetric developer
+account.
+
+```python
+"""Asynchronous Python client for LaMetric TIME devices."""
+
+import asyncio
+
+from demetriek import LaMetricCloud
+
+
+async def main():
+    """List the LaMetric devices on your account."""
+    async with LaMetricCloud(token="oauth2_access_token") as cloud:
+        user = await cloud.current_user()
+        print(f"Hi {user.name}, you have these devices:")
+
+        for device in await cloud.devices():
+            print(f"- {device.name} at {device.ip}")
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ from demetriek import (
 )
 from demetriek.const import DeviceState
 
-from .conftest import CLOUD_URL, load_fixture
+from .conftest import CLOUD_URL, load_fixture, request_json
 
 
 async def test_json_request(responses: aioresponses, cloud: LaMetricCloud) -> None:
@@ -260,3 +260,27 @@ async def test_get_device(responses: aioresponses, cloud: LaMetricCloud) -> None
     assert device.ssid == "AllYourBaseAreBelongToUs"
     assert device.created_at == datetime(2015, 3, 6, 15, 15, 55, tzinfo=UTC)
     assert device.updated_at == datetime(2016, 6, 14, 18, 27, 13, tzinfo=UTC)
+
+
+async def test_rename_device(responses: aioresponses, cloud: LaMetricCloud) -> None:
+    """Test renaming a device."""
+    url = f"{CLOUD_URL}/api/v2/users/me/devices/42"
+    responses.put(url, status=200, body=load_fixture("cloud_device_rename.json"))
+
+    await cloud.rename_device(42, name="Device @ Work")
+
+    assert request_json(responses, "PUT", url) == {"name": "Device @ Work"}
+
+
+async def test_rename_device_without_scope(
+    responses: aioresponses, cloud: LaMetricCloud
+) -> None:
+    """Test renaming without the devices_write scope raises an auth error."""
+    responses.put(
+        f"{CLOUD_URL}/api/v2/users/me/devices/42",
+        status=403,
+        body='{"errors":[{"message":"Forbidden"}]}',
+    )
+
+    with pytest.raises(LaMetricAuthenticationError):
+        await cloud.rename_device(42, name="Device @ Work")

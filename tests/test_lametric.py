@@ -183,7 +183,7 @@ async def test_invalid_json_response(
         await device._request("/")
 
     # Not a subclass, broken JSON is no reason to ask for new credentials.
-    assert type(error.value) is LaMetricError
+    assert error.type is LaMetricError
 
     assert len(next(iter(responses.requests.values()))) == 1
 

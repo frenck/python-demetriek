@@ -179,8 +179,11 @@ async def test_invalid_json_response(
     """Test a broken JSON response raises a LaMetricError, without retrying."""
     responses.get(f"{DEVICE_URL}/", status=200, body="{", repeat=True)
 
-    with pytest.raises(LaMetricError, match="invalid JSON"):
+    with pytest.raises(LaMetricError, match="invalid JSON") as error:
         await device._request("/")
+
+    # Not a subclass, broken JSON is no reason to ask for new credentials.
+    assert type(error.value) is LaMetricError
 
     assert len(next(iter(responses.requests.values()))) == 1
 

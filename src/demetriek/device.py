@@ -687,9 +687,12 @@ class LaMetricDevice:
             try:
                 notifications.append(self._parse(Notification, notification))
             except LaMetricError:
+                notification_id = (
+                    notification.get("id") if isinstance(notification, dict) else None
+                )
                 _LOGGER.warning(
                     "Skipping notification %s, its format is not supported",
-                    notification.get("id"),
+                    notification_id,
                 )
         return notifications
 

@@ -27,6 +27,7 @@ from demetriek import (
     NotificationSoundCategory,
     Simple,
     Sound,
+    Update,
 )
 from demetriek.const import (
     NotificationType,
@@ -95,6 +96,60 @@ async def test_api_not_an_object(
 
     with pytest.raises(LaMetricError, match="should be a dict instance"):
         await device.api()
+
+
+@pytest.mark.parametrize(
+    ("call", "path", "body"),
+    [
+        ("display", "/api/v2/device/display", "{}"),
+        ("audio", "/api/v2/device/audio", '{"volume": "loud"}'),
+        ("bluetooth", "/api/v2/device/bluetooth", "{}"),
+        ("wifi", "/api/v2/device/wifi", "{}"),
+        ("apps", "/api/v2/device/apps", '{"com.lametric.clock": {}}'),
+        ("stream", "/api/v2/device/stream", "{}"),
+        ("notification_current", "/api/v2/device/notifications/current", '{"id": 1}'),
+    ],
+)
+async def test_unexpected_data(
+    responses: aioresponses,
+    device: LaMetricDevice,
+    call: str,
+    path: str,
+    body: str,
+) -> None:
+    """Test every endpoint raises a LaMetricError on data it does not understand."""
+    responses.get(f"{DEVICE_URL}{path}", status=200, body=body)
+
+    with pytest.raises(LaMetricError, match="data this library does not understand"):
+        await getattr(device, call)()
+
+
+async def test_get_device_wifi_not_an_object(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test a Wi-Fi block that is not an object raises a LaMetricError."""
+    data = json.loads(load_fixture("device.json"))
+    data["wifi"] = "unexpected"
+    responses.get(f"{DEVICE_URL}/api/v2/device", status=200, body=json.dumps(data))
+
+    with pytest.raises(LaMetricError, match='Field "wifi"'):
+        await device.device()
+
+
+async def test_get_device_update(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test an available firmware update is exposed as an Update."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device",
+        status=200,
+        body=load_fixture("device_sa5_1.json"),
+    )
+
+    result = await device.device()
+
+    assert isinstance(result.update, Update)
+    assert result.update.version == "3.2.1"
 
 
 async def test_notify(responses: aioresponses, device: LaMetricDevice) -> None:
@@ -387,6 +442,21 @@ async def test_notification_queue_skips_unsupported(
 
     assert [notification.notification_id for notification in notifications] == [25]
     assert "Skipping notification 26" in caplog.text
+
+
+async def test_notification_queue_skips_null(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test an empty entry in the queue does not break the whole queue."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications",
+        status=200,
+        body='[null, {"id": "25", "model": {"frames": [{"text": "first"}]}}]',
+    )
+
+    notifications = await device.notification_queue()
+
+    assert [notification.notification_id for notification in notifications] == [25]
 
 
 async def test_dismiss_all_notifications_unsupported(

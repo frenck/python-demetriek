@@ -1,0 +1,15 @@
+{
+  "canvas": {
+    "pixel": {
+      "size": {
+        "height": 8,
+        "width": 37
+      }
+    }
+  },
+  "features": [],
+  "port": 9999,
+  "protocol": "lmsp",
+  "status": "stopped",
+  "version": "1.0"
+}

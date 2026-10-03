@@ -13,6 +13,10 @@ from .const import (
     NotificationSoundCategory,
     NotificationType,
     ScreensaverMode,
+    StreamContentEncoding,
+    StreamFillType,
+    StreamRenderMode,
+    StreamStatus,
     WifiMode,
 )
 from .device import LaMetricDevice
@@ -46,10 +50,17 @@ from .models import (
     Simple,
     Sound,
     SoundURL,
+    Stream,
+    StreamCanvas,
+    StreamCanvases,
+    StreamCanvasSize,
+    StreamFadingPixels,
+    StreamSession,
     User,
     Widget,
     Wifi,
 )
+from .stream import LaMetricStream, StreamArea, build_lmsp_packet
 
 __all__ = [
     "API",
@@ -80,6 +91,7 @@ __all__ = [
     "LaMetricConnectionTimeoutError",
     "LaMetricDevice",
     "LaMetricError",
+    "LaMetricStream",
     "Model",
     "Notification",
     "NotificationIconType",
@@ -92,8 +104,20 @@ __all__ = [
     "Simple",
     "Sound",
     "SoundURL",
+    "Stream",
+    "StreamArea",
+    "StreamCanvas",
+    "StreamCanvasSize",
+    "StreamCanvases",
+    "StreamContentEncoding",
+    "StreamFadingPixels",
+    "StreamFillType",
+    "StreamRenderMode",
+    "StreamSession",
+    "StreamStatus",
     "User",
     "Widget",
     "Wifi",
     "WifiMode",
+    "build_lmsp_packet",
 ]

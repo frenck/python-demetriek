@@ -24,6 +24,9 @@ from .const import (
     NotificationSound,
     NotificationSoundCategory,
     NotificationType,
+    StreamFillType,
+    StreamRenderMode,
+    StreamStatus,
     WifiMode,
 )
 
@@ -374,6 +377,64 @@ class Notification(DataClassORJSONMixin):
 
         serialize_by_alias = True
         omit_none = True
+
+
+@dataclass(kw_only=True)
+class StreamCanvasSize(DataClassORJSONMixin):
+    """Object holding the size of a stream canvas."""
+
+    height: int
+    width: int
+
+
+@dataclass(kw_only=True)
+class StreamCanvas(DataClassORJSONMixin):
+    """Object holding a stream canvas of an LaMetric device."""
+
+    size: StreamCanvasSize
+
+
+@dataclass(kw_only=True)
+class StreamCanvases(DataClassORJSONMixin):
+    """Object holding the stream canvases of an LaMetric device."""
+
+    pixel: StreamCanvas | None = None
+
+    # Only the SKY has triangular pixels.
+    triangle: StreamCanvas | None = None
+
+
+@dataclass(kw_only=True)
+class Stream(DataClassORJSONMixin):
+    """Object holding the stream state of an LaMetric device."""
+
+    canvas: StreamCanvases
+    features: list[str] = field(default_factory=list)
+    port: int
+    protocol: str
+    status: StreamStatus
+    version: str
+
+
+@dataclass(kw_only=True)
+class StreamFadingPixels(DataClassORJSONMixin):
+    """Object holding the settings of the fading pixels stream effect."""
+
+    fade_speed: float = 0.005
+    pixel_base: float = 0.05
+    pixel_fill: float = 1
+    smooth: bool = True
+
+
+@dataclass(kw_only=True)
+class StreamSession(DataClassORJSONMixin):
+    """Object holding a started stream on an LaMetric device."""
+
+    fill_type: StreamFillType
+    port: int
+    render_mode: StreamRenderMode
+    session_id: str
+    status: StreamStatus
 
 
 @dataclass(kw_only=True)

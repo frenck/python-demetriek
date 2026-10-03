@@ -1,6 +1,6 @@
 """Asynchronous Python client for LaMetric TIME devices."""
 
-from enum import StrEnum
+from enum import IntEnum, StrEnum
 
 # The model the device reports is a hardware identifier, not a product name.
 # LaMetric TIME reports "LM 37X8" on firmware 2.x and "sa8" on 3.x.
@@ -144,6 +144,36 @@ class ScreensaverMode(StrEnum):
 
     TIME_BASED = "time_based"
     WHEN_DARK = "when_dark"
+
+
+class StreamContentEncoding(IntEnum):
+    """Enum holding the encodings LMSP accepts for frame data."""
+
+    RAW = 0
+    PNG = 1
+    JPEG = 2
+    GIF = 3
+
+
+class StreamFillType(StrEnum):
+    """Enum holding how a stream fills a screen larger than its canvas."""
+
+    SCALE = "scale"
+    TILE = "tile"
+
+
+class StreamRenderMode(StrEnum):
+    """Enum holding how streamed pixels map onto the screen."""
+
+    PIXEL = "pixel"
+    TRIANGLE = "triangle"
+
+
+class StreamStatus(StrEnum):
+    """Enum holding the available stream states."""
+
+    RECEIVING = "receiving"
+    STOPPED = "stopped"
 
 
 class WifiMode(StrEnum):

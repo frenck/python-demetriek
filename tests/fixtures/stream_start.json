@@ -1,0 +1,14 @@
+{
+  "success": {
+    "data": {
+      "canvas": {
+        "fill_type": "scale",
+        "render_mode": "pixel"
+      },
+      "port": 9999,
+      "session_id": "a2891aa891ab4f8e8a1a16eb319b00f3",
+      "status": "receiving"
+    },
+    "path": "/api/v2/device/stream/start"
+  }
+}

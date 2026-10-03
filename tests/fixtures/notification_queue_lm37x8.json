@@ -1,0 +1,77 @@
+[
+  {
+    "created": "2026-10-03T09:06:16Z",
+    "expiration_date": "2026-10-03T09:08:16Z",
+    "id": "12",
+    "model": {
+      "cycles": 1,
+      "frames": [
+        {
+          "duration": 2000,
+          "text": "critical"
+        }
+      ]
+    },
+    "priority": "critical",
+    "type": "external",
+    "updated": "2026-10-03T09:06:16Z"
+  },
+  {
+    "created": "2026-10-03T09:06:16Z",
+    "expiration_date": "2026-10-03T09:08:16Z",
+    "id": "11",
+    "model": {
+      "cycles": 2,
+      "frames": [
+        {
+          "goalData": {
+            "current": 42,
+            "end": 100,
+            "start": 0,
+            "unit": "%"
+          },
+          "icon": 7956
+        },
+        {
+          "chartData": [1, 3, 5, 7, 5, 3, 1]
+        }
+      ]
+    },
+    "priority": "warning",
+    "type": "external",
+    "updated": "2026-10-03T09:06:16Z"
+  },
+  {
+    "created": "2026-10-03T09:06:15Z",
+    "expiration_date": "2026-10-03T09:08:15Z",
+    "id": "9",
+    "model": {
+      "cycles": 0,
+      "frames": [
+        {
+          "text": "blocker"
+        }
+      ]
+    },
+    "priority": "info",
+    "type": "external",
+    "updated": "2026-10-03T09:06:15Z"
+  },
+  {
+    "created": "2026-10-03T09:06:16Z",
+    "expiration_date": "2026-10-03T09:07:16Z",
+    "id": "10",
+    "model": {
+      "cycles": 1,
+      "frames": [
+        {
+          "icon": 3219,
+          "text": "info"
+        }
+      ]
+    },
+    "priority": "info",
+    "type": "external",
+    "updated": "2026-10-03T09:06:16Z"
+  }
+]

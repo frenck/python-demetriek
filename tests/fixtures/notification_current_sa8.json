@@ -1,0 +1,17 @@
+{
+  "created": "2026-10-03T09:06:41Z",
+  "expiration_date": "2026-10-03T09:08:41Z",
+  "id": "5",
+  "model": {
+    "cycles": 0,
+    "frames": [
+      {
+        "icon": 3219,
+        "text": "current?"
+      }
+    ]
+  },
+  "priority": "warning",
+  "type": "external",
+  "updated": "2026-10-03T09:06:41Z"
+}

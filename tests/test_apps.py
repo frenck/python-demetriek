@@ -147,7 +147,11 @@ async def test_app_action_without_params(
 async def test_app_action_returns_data(
     responses: aioresponses, device: LaMetricDevice
 ) -> None:
-    """Test the data an app returns for an action is passed on."""
+    """Test the data an app returns for an action is passed on.
+
+    The payload is made up: a real radio that is not playing answers
+    `radio.state` with empty data, which would not show the data is passed on.
+    """
     url = (
         f"{DEVICE_URL}/api/v2/device/apps/com.lametric.radio"
         "/widgets/3_com.lametric.radio/actions"

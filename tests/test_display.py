@@ -75,6 +75,21 @@ async def test_set_display(responses: aioresponses, device: LaMetricDevice) -> N
     assert display.on is True
 
 
+async def test_set_display_zero_and_off(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test zero and off are sent, and not mistaken for no value at all."""
+    responses.put(DISPLAY_URL, status=200, body=load_fixture("display_set.json"))
+
+    await device.display(brightness=0, screensaver_enabled=False, on=False)
+
+    assert request_json(responses, "PUT", DISPLAY_URL) == {
+        "brightness": 0,
+        "screensaver": {"enabled": False},
+        "on": False,
+    }
+
+
 async def test_set_display_screensaver_mode(
     responses: aioresponses, device: LaMetricDevice
 ) -> None:

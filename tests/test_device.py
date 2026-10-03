@@ -32,6 +32,9 @@ from demetriek.const import (
 
 from .conftest import DEVICE_URL, load_fixture, request_json
 
+# Real devices answer a dismissal with a success flag.
+DISMISSED = '{"success": true}'
+
 
 @pytest.mark.parametrize(
     "fixture",
@@ -227,8 +230,8 @@ async def test_dismiss_all_notifications(
         status=200,
         body=load_fixture("notification_queue.json"),
     )
-    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/25", body="{}")
-    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/26", body="{}")
+    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/25", body=DISMISSED)
+    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/26", body=DISMISSED)
 
     await device.dismiss_all_notifications()
 
@@ -264,7 +267,7 @@ async def test_dismiss_current_notification(
         body=load_fixture("notification_get.json"),
     )
     url = f"{DEVICE_URL}/api/v2/device/notifications/25"
-    responses.delete(url, body="{}")
+    responses.delete(url, body=DISMISSED)
 
     await device.dismiss_current_notification()
 
@@ -345,8 +348,8 @@ async def test_dismiss_all_notifications_unsupported(
         status=200,
         body=UNSUPPORTED_QUEUE,
     )
-    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/25", body="{}")
-    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/26", body="{}")
+    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/25", body=DISMISSED)
+    responses.delete(f"{DEVICE_URL}/api/v2/device/notifications/26", body=DISMISSED)
 
     await device.dismiss_all_notifications()
 
@@ -467,3 +470,53 @@ async def test_notification_frame_duration(
         Simple(text="N 1S", icon=3219, duration=1000),
         Simple(text="N 10S", icon=7956, duration=10000),
     ]
+
+
+@pytest.mark.parametrize("generation", ["lm37x8", "sa8"])
+async def test_notification_queue_real(
+    responses: aioresponses,
+    device: LaMetricDevice,
+    snapshot: SnapshotAssertion,
+    generation: str,
+) -> None:
+    """Test a queue captured from a real device, with every frame type."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications",
+        status=200,
+        body=load_fixture(f"notification_queue_{generation}.json"),
+    )
+
+    notifications = await device.notification_queue()
+
+    # The device orders the queue by priority, then by arrival.
+    assert [notification.priority for notification in notifications] == [
+        NotificationPriority.CRITICAL,
+        NotificationPriority.WARNING,
+        NotificationPriority.INFO,
+        NotificationPriority.INFO,
+    ]
+    assert [type(frame) for frame in notifications[1].model.frames] == [Goal, Chart]
+
+    # The device does not keep the icon type it was sent.
+    assert all(notification.icon_type is None for notification in notifications)
+
+    assert [asdict(notification) for notification in notifications] == snapshot
+
+
+async def test_notification_current_real(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test the notification on display, as captured from a real device."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications/current",
+        status=200,
+        body=load_fixture("notification_current_sa8.json"),
+    )
+
+    notification = await device.notification_current()
+
+    assert notification
+    assert notification.notification_id == 5
+    assert notification.priority is NotificationPriority.WARNING
+    assert notification.model.cycles == 0
+    assert notification.model.frames == [Simple(text="current?", icon=3219)]

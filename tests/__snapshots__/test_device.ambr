@@ -529,3 +529,213 @@
     }),
   })
 # ---
+# name: test_notification_queue_real[lm37x8]
+  list([
+    dict({
+      'created': datetime.datetime(2026, 10, 3, 9, 6, 16, tzinfo=datetime.timezone.utc),
+      'expiration_date': datetime.datetime(2026, 10, 3, 9, 8, 16, tzinfo=datetime.timezone.utc),
+      'icon_type': None,
+      'life_time': None,
+      'model': dict({
+        'cycles': 1,
+        'frames': list([
+          dict({
+            'duration': 2000,
+            'icon': None,
+            'text': 'critical',
+          }),
+        ]),
+        'sound': None,
+      }),
+      'notification_id': 12,
+      'notification_type': <NotificationType.EXTERNAL: 'external'>,
+      'priority': <NotificationPriority.CRITICAL: 'critical'>,
+      'updated': datetime.datetime(2026, 10, 3, 9, 6, 16, tzinfo=datetime.timezone.utc),
+    }),
+    dict({
+      'created': datetime.datetime(2026, 10, 3, 9, 6, 16, tzinfo=datetime.timezone.utc),
+      'expiration_date': datetime.datetime(2026, 10, 3, 9, 8, 16, tzinfo=datetime.timezone.utc),
+      'icon_type': None,
+      'life_time': None,
+      'model': dict({
+        'cycles': 2,
+        'frames': list([
+          dict({
+            'data': dict({
+              'current': 42,
+              'end': 100,
+              'start': 0,
+              'unit': '%',
+            }),
+            'duration': None,
+            'icon': 7956,
+          }),
+          dict({
+            'data': list([
+              1,
+              3,
+              5,
+              7,
+              5,
+              3,
+              1,
+            ]),
+            'duration': None,
+          }),
+        ]),
+        'sound': None,
+      }),
+      'notification_id': 11,
+      'notification_type': <NotificationType.EXTERNAL: 'external'>,
+      'priority': <NotificationPriority.WARNING: 'warning'>,
+      'updated': datetime.datetime(2026, 10, 3, 9, 6, 16, tzinfo=datetime.timezone.utc),
+    }),
+    dict({
+      'created': datetime.datetime(2026, 10, 3, 9, 6, 15, tzinfo=datetime.timezone.utc),
+      'expiration_date': datetime.datetime(2026, 10, 3, 9, 8, 15, tzinfo=datetime.timezone.utc),
+      'icon_type': None,
+      'life_time': None,
+      'model': dict({
+        'cycles': 0,
+        'frames': list([
+          dict({
+            'duration': None,
+            'icon': None,
+            'text': 'blocker',
+          }),
+        ]),
+        'sound': None,
+      }),
+      'notification_id': 9,
+      'notification_type': <NotificationType.EXTERNAL: 'external'>,
+      'priority': <NotificationPriority.INFO: 'info'>,
+      'updated': datetime.datetime(2026, 10, 3, 9, 6, 15, tzinfo=datetime.timezone.utc),
+    }),
+    dict({
+      'created': datetime.datetime(2026, 10, 3, 9, 6, 16, tzinfo=datetime.timezone.utc),
+      'expiration_date': datetime.datetime(2026, 10, 3, 9, 7, 16, tzinfo=datetime.timezone.utc),
+      'icon_type': None,
+      'life_time': None,
+      'model': dict({
+        'cycles': 1,
+        'frames': list([
+          dict({
+            'duration': None,
+            'icon': 3219,
+            'text': 'info',
+          }),
+        ]),
+        'sound': None,
+      }),
+      'notification_id': 10,
+      'notification_type': <NotificationType.EXTERNAL: 'external'>,
+      'priority': <NotificationPriority.INFO: 'info'>,
+      'updated': datetime.datetime(2026, 10, 3, 9, 6, 16, tzinfo=datetime.timezone.utc),
+    }),
+  ])
+# ---
+# name: test_notification_queue_real[sa8]
+  list([
+    dict({
+      'created': datetime.datetime(2026, 10, 3, 9, 6, 21, tzinfo=datetime.timezone.utc),
+      'expiration_date': datetime.datetime(2026, 10, 3, 9, 8, 21, tzinfo=datetime.timezone.utc),
+      'icon_type': None,
+      'life_time': None,
+      'model': dict({
+        'cycles': 1,
+        'frames': list([
+          dict({
+            'duration': 2000,
+            'icon': None,
+            'text': 'critical',
+          }),
+        ]),
+        'sound': None,
+      }),
+      'notification_id': 4,
+      'notification_type': <NotificationType.EXTERNAL: 'external'>,
+      'priority': <NotificationPriority.CRITICAL: 'critical'>,
+      'updated': datetime.datetime(2026, 10, 3, 9, 6, 21, tzinfo=datetime.timezone.utc),
+    }),
+    dict({
+      'created': datetime.datetime(2026, 10, 3, 9, 6, 21, tzinfo=datetime.timezone.utc),
+      'expiration_date': datetime.datetime(2026, 10, 3, 9, 8, 21, tzinfo=datetime.timezone.utc),
+      'icon_type': None,
+      'life_time': None,
+      'model': dict({
+        'cycles': 2,
+        'frames': list([
+          dict({
+            'data': dict({
+              'current': 42,
+              'end': 100,
+              'start': 0,
+              'unit': '%',
+            }),
+            'duration': None,
+            'icon': 7956,
+          }),
+          dict({
+            'data': list([
+              1,
+              3,
+              5,
+              7,
+              5,
+              3,
+              1,
+            ]),
+            'duration': None,
+          }),
+        ]),
+        'sound': None,
+      }),
+      'notification_id': 3,
+      'notification_type': <NotificationType.EXTERNAL: 'external'>,
+      'priority': <NotificationPriority.WARNING: 'warning'>,
+      'updated': datetime.datetime(2026, 10, 3, 9, 6, 21, tzinfo=datetime.timezone.utc),
+    }),
+    dict({
+      'created': datetime.datetime(2026, 10, 3, 9, 6, 20, tzinfo=datetime.timezone.utc),
+      'expiration_date': datetime.datetime(2026, 10, 3, 9, 8, 20, tzinfo=datetime.timezone.utc),
+      'icon_type': None,
+      'life_time': None,
+      'model': dict({
+        'cycles': 0,
+        'frames': list([
+          dict({
+            'duration': None,
+            'icon': None,
+            'text': 'blocker',
+          }),
+        ]),
+        'sound': None,
+      }),
+      'notification_id': 1,
+      'notification_type': <NotificationType.EXTERNAL: 'external'>,
+      'priority': <NotificationPriority.INFO: 'info'>,
+      'updated': datetime.datetime(2026, 10, 3, 9, 6, 20, tzinfo=datetime.timezone.utc),
+    }),
+    dict({
+      'created': datetime.datetime(2026, 10, 3, 9, 6, 21, tzinfo=datetime.timezone.utc),
+      'expiration_date': datetime.datetime(2026, 10, 3, 9, 7, 21, tzinfo=datetime.timezone.utc),
+      'icon_type': None,
+      'life_time': None,
+      'model': dict({
+        'cycles': 1,
+        'frames': list([
+          dict({
+            'duration': None,
+            'icon': 3219,
+            'text': 'info',
+          }),
+        ]),
+        'sound': None,
+      }),
+      'notification_id': 2,
+      'notification_type': <NotificationType.EXTERNAL: 'external'>,
+      'priority': <NotificationPriority.INFO: 'info'>,
+      'updated': datetime.datetime(2026, 10, 3, 9, 6, 21, tzinfo=datetime.timezone.utc),
+    }),
+  ])
+# ---

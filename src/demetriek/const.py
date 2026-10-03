@@ -142,6 +142,7 @@ class NotificationType(StrEnum):
 class ScreensaverMode(StrEnum):
     """Enum holding the available screensaver modes."""
 
+    SCREEN_OFF = "screen_off"
     TIME_BASED = "time_based"
     WHEN_DARK = "when_dark"
 

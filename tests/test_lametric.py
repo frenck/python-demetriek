@@ -95,6 +95,10 @@ async def test_timeout(responses: aioresponses, device: LaMetricDevice) -> None:
     assert len(next(iter(responses.requests.values()))) == 3
 
 
+CHANGE_METHODS = ["POST", "PUT", "DELETE"]
+
+
+@pytest.mark.parametrize("method", CHANGE_METHODS)
 @pytest.mark.parametrize(
     "exception",
     [
@@ -103,38 +107,85 @@ async def test_timeout(responses: aioresponses, device: LaMetricDevice) -> None:
     ],
 )
 async def test_change_not_retried_once_sent(
-    responses: aioresponses, device: LaMetricDevice, exception: Exception
+    responses: aioresponses,
+    device: LaMetricDevice,
+    exception: Exception,
+    method: str,
 ) -> None:
     """Test a change is not repeated when it may have reached the device.
 
     Repeating it could, for example, show the same notification twice.
     """
-    responses.post(f"{DEVICE_URL}/", exception=exception, repeat=True)
+    responses.add(f"{DEVICE_URL}/", method, exception=exception, repeat=True)
 
     with pytest.raises(LaMetricConnectionError):
-        await device._request("/", method="POST")
+        await device._request("/", method=method)
 
     assert len(next(iter(responses.requests.values()))) == 1
 
 
+@pytest.mark.parametrize("method", CHANGE_METHODS)
 @pytest.mark.parametrize(
     "exception",
     [
         aiohttp.ClientConnectorError(MagicMock(), OSError()),
+        aiohttp.ConnectionTimeoutError(),
         socket.gaierror(),
     ],
 )
 async def test_change_retried_when_not_sent(
-    responses: aioresponses, device: LaMetricDevice, exception: Exception
+    responses: aioresponses,
+    device: LaMetricDevice,
+    exception: Exception,
+    method: str,
 ) -> None:
     """Test a change is retried when it never reached the device."""
-    responses.post(f"{DEVICE_URL}/", exception=exception)
-    responses.post(f"{DEVICE_URL}/", exception=exception)
-    responses.post(f"{DEVICE_URL}/", status=200, body='{"status": "ok"}')
+    responses.add(f"{DEVICE_URL}/", method, exception=exception)
+    responses.add(f"{DEVICE_URL}/", method, exception=exception)
+    responses.add(f"{DEVICE_URL}/", method, status=200, body='{"status": "ok"}')
 
-    response = await device._request("/", method="POST")
+    response = await device._request("/", method=method)
 
     assert response["status"] == "ok"
+
+
+@pytest.mark.parametrize("status", [502, 503, 504])
+async def test_temporarily_unavailable_read_retried(
+    responses: aioresponses, device: LaMetricDevice, status: int
+) -> None:
+    """Test reading is retried when the device is briefly unable to answer."""
+    responses.get(f"{DEVICE_URL}/", status=status, body="")
+    responses.get(f"{DEVICE_URL}/", status=200, body='{"status": "ok"}')
+
+    response = await device._request("/")
+
+    assert response["status"] == "ok"
+
+
+@pytest.mark.parametrize("method", CHANGE_METHODS)
+async def test_temporarily_unavailable_change_not_retried(
+    responses: aioresponses, device: LaMetricDevice, method: str
+) -> None:
+    """Test a change is not repeated, the device may have acted on it."""
+    responses.add(f"{DEVICE_URL}/", method, status=503, body="", repeat=True)
+
+    with pytest.raises(LaMetricConnectionError, match="temporarily unavailable"):
+        await device._request("/", method=method)
+
+    assert len(next(iter(responses.requests.values()))) == 1
+
+
+async def test_server_error_not_retried(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test an error that is not transient is raised right away."""
+    responses.get(f"{DEVICE_URL}/", status=500, body="", repeat=True)
+
+    with pytest.raises(LaMetricError) as error:
+        await device._request("/")
+
+    assert not isinstance(error.value, LaMetricConnectionError)
+    assert len(next(iter(responses.requests.values()))) == 1
 
 
 async def test_http_error404(responses: aioresponses, device: LaMetricDevice) -> None:

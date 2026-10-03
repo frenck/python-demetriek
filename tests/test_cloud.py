@@ -127,6 +127,31 @@ async def test_http_error401(
     assert len(next(iter(responses.requests.values()))) == 1
 
 
+@pytest.mark.parametrize("status", [502, 503, 504])
+async def test_temporarily_unavailable_retried(
+    responses: aioresponses, cloud: LaMetricCloud, status: int
+) -> None:
+    """Test a request is retried when the cloud is briefly unable to answer."""
+    responses.get(f"{CLOUD_URL}/", status=status, body="")
+    responses.get(f"{CLOUD_URL}/", status=200, body='{"status": "ok"}')
+
+    response = await cloud._request("/")
+
+    assert response["status"] == "ok"
+
+
+async def test_temporarily_unavailable_gives_up(
+    responses: aioresponses, cloud: LaMetricCloud
+) -> None:
+    """Test a cloud that stays unavailable raises a connection error."""
+    responses.get(f"{CLOUD_URL}/", status=503, body="", repeat=True)
+
+    with pytest.raises(LaMetricConnectionError, match="temporarily unavailable"):
+        await cloud._request("/")
+
+    assert len(next(iter(responses.requests.values()))) == 3
+
+
 async def test_http_error_not_retried(
     responses: aioresponses, cloud: LaMetricCloud
 ) -> None:

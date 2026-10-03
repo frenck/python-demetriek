@@ -243,10 +243,13 @@ class Chart(DataClassORJSONMixin):
     """Object holding the chart frame of an LaMetric notification."""
 
     data: list[int] = field(metadata=field_options(alias="chartData"))
+    # How long the frame stays on screen, in milliseconds.
+    duration: int | None = None
 
     class Config(BaseConfig):
         """Chart model configuration."""
 
+        omit_none = True
         serialize_by_alias = True
         allow_deserialization_not_by_alias = True
 
@@ -257,6 +260,8 @@ class Simple(DataClassORJSONMixin):
 
     icon: int | str | None = None
     text: str
+    # How long the frame stays on screen, in milliseconds.
+    duration: int | None = None
 
     class Config(BaseConfig):
         """Simple model configuration."""
@@ -285,6 +290,8 @@ class Goal(DataClassORJSONMixin):
 
     data: GoalData = field(metadata=field_options(alias="goalData"))
     icon: int | str | None = None
+    # How long the frame stays on screen, in milliseconds.
+    duration: int | None = None
 
     class Config(BaseConfig):
         """Goal model configuration."""

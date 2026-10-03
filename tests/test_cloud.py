@@ -140,8 +140,20 @@ async def test_no_json_response(responses: aioresponses, cloud: LaMetricCloud) -
         content_type="text/html",
     )
 
-    with pytest.raises(LaMetricError):
+    with pytest.raises(LaMetricError, match="'text/html', instead of JSON"):
         await cloud._request("/")
+
+
+async def test_invalid_json_response(
+    responses: aioresponses, cloud: LaMetricCloud
+) -> None:
+    """Test a broken JSON response raises a LaMetricError, without retrying."""
+    responses.get(f"{CLOUD_URL}/", status=200, body="{", repeat=True)
+
+    with pytest.raises(LaMetricError, match="invalid JSON"):
+        await cloud._request("/")
+
+    assert len(next(iter(responses.requests.values()))) == 1
 
 
 async def test_get_current_user(responses: aioresponses, cloud: LaMetricCloud) -> None:

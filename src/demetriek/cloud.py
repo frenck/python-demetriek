@@ -114,11 +114,17 @@ class LaMetricCloud:
 
             content_type = response.headers.get("Content-Type", "")
             if "application/json" not in content_type:
-                raise LaMetricError(
-                    response.status,
-                    {"message": await response.text()},
+                msg = (
+                    f"The LaMetric cloud answered with {content_type!r},"
+                    " instead of JSON"
                 )
-            return await response.json()
+                raise LaMetricError(msg)
+
+            try:
+                return await response.json()
+            except ValueError as exception:
+                msg = "The LaMetric cloud answered with invalid JSON"
+                raise LaMetricError(msg) from exception
 
         except TimeoutError as exception:
             msg = "Timeout occurred while connecting to the LaMetric cloud"

@@ -27,8 +27,9 @@ Besides the local device API, it can:
 
 - Talk to the LaMetric cloud, to list the devices on your account, including
   their local IP address and API key.
-- Stream frames straight to the screen of the device, see
-  [`examples/stream.py`](examples/stream.py).
+- Stream frames straight to the screen of devices that support it, see
+  [`examples/stream.py`](examples/stream.py). An LM 37X8 TIME on firmware 2.x
+  does not.
 
 ## Installation
 

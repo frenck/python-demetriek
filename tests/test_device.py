@@ -418,3 +418,50 @@ async def test_notify_lifetime(responses: aioresponses, device: LaMetricDevice) 
     assert request["lifetime"] == 5000
     assert "life_time" not in request
     assert "lifeTime" not in request
+
+
+async def test_notify_frame_duration(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test frames send their duration, and leave it out when not set."""
+    url = f"{DEVICE_URL}/api/v2/device/notifications"
+    responses.post(url, status=201, body=load_fixture("notification.json"))
+
+    await device.notify(
+        notification=Notification(
+            model=Model(
+                frames=[
+                    Simple(text="Short", duration=1000),
+                    Goal(data=GoalData(current=1, end=2, start=0), duration=5000),
+                    Chart(data=[1, 2, 3], duration=10000),
+                    Chart(data=[3, 2, 1]),
+                ]
+            )
+        )
+    )
+
+    frames = request_json(responses, "POST", url)["model"]["frames"]
+    assert [frame.get("duration") for frame in frames] == [1000, 5000, 10000, None]
+    assert "duration" not in frames[3]
+
+
+async def test_notification_frame_duration(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test the duration of frames in the queue is parsed."""
+    responses.get(
+        f"{DEVICE_URL}/api/v2/device/notifications/7",
+        status=200,
+        body=(
+            '{"id": "7", "model": {"frames": ['
+            '{"duration": 1000, "icon": 3219, "text": "N 1S"},'
+            '{"duration": 10000, "icon": 7956, "text": "N 10S"}]}}'
+        ),
+    )
+
+    notification = await device.notification(notification_id=7)
+
+    assert notification.model.frames == [
+        Simple(text="N 1S", icon=3219, duration=1000),
+        Simple(text="N 10S", icon=7956, duration=10000),
+    ]

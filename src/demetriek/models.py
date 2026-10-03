@@ -352,7 +352,11 @@ class Notification(DataClassORJSONMixin):
     created: datetime | None = None
     expiration_date: datetime | None = None
     icon_type: NotificationIconType | None = None
-    life_time: float | None = None
+    # The device only accepts "lifetime", not the "lifeTime" its docs show.
+    life_time: int | None = field(
+        default=None,
+        metadata=field_options(alias="lifetime"),
+    )
     model: Model
     notification_id: int | None = field(
         default=None,

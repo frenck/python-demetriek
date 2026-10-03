@@ -169,8 +169,20 @@ async def test_no_json_response(
         content_type="text/html",
     )
 
-    with pytest.raises(LaMetricError):
+    with pytest.raises(LaMetricError, match="'text/html', instead of JSON"):
         await device._request("/")
+
+
+async def test_invalid_json_response(
+    responses: aioresponses, device: LaMetricDevice
+) -> None:
+    """Test a broken JSON response raises a LaMetricError, without retrying."""
+    responses.get(f"{DEVICE_URL}/", status=200, body="{", repeat=True)
+
+    with pytest.raises(LaMetricError, match="invalid JSON"):
+        await device._request("/")
+
+    assert len(next(iter(responses.requests.values()))) == 1
 
 
 @pytest.mark.parametrize("status", [401, 403])

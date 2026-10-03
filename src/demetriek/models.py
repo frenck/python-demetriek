@@ -177,15 +177,18 @@ class Display(DataClassORJSONMixin):
 class Wifi(DataClassORJSONMixin):
     """Object holding the Wi-Fi state of an LaMetric device."""
 
-    active: bool
     available: bool
     encryption: str | None = None
-    ip: IPv4Address
-    mac: str
     mode: WifiMode
-    netmask: str
     rssi: int | None = None
-    ssid: str
+
+    # A device that is (re)connecting to its Wi-Fi network leaves these out,
+    # or reports them as null. Seen on a real TIME, home-assistant/core#97575.
+    active: bool | None = None
+    ip: IPv4Address | None = None
+    mac: str | None = None
+    netmask: str | None = None
+    ssid: str | None = None
 
 
 @dataclass(kw_only=True)

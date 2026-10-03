@@ -92,7 +92,7 @@ async def test_notify(responses: aioresponses, device: LaMetricDevice) -> None:
     request = request_json(responses, "POST", url)
     assert request["type"] == "external"
     assert request["icon_type"] == "alert"
-    assert "life_time" not in request
+    assert "lifetime" not in request
     assert "unit" in request["model"]["frames"][1]["goalData"]
     assert "icon" not in request["model"]["frames"][2]
     assert request["model"]["sound"]["id"] == "win"
@@ -361,15 +361,30 @@ def test_misspelled_sound_names_are_aliases() -> None:
     assert NotificationSound("negative1").name == "NEGATIVE1"
 
 
-async def test_api(responses: aioresponses, device: LaMetricDevice) -> None:
+@pytest.mark.parametrize(
+    ("fixture", "version", "streaming"),
+    [
+        # The TIME from before 2022 reports API 2.3.0, without streaming.
+        ("api.json", "2.3.0", False),
+        ("api_sa8.json", "2.4.0", True),
+    ],
+)
+async def test_api(
+    responses: aioresponses,
+    device: LaMetricDevice,
+    fixture: str,
+    version: str,
+    streaming: bool,  # noqa: FBT001
+) -> None:
     """Test getting the API version and the available endpoints."""
-    responses.get(f"{DEVICE_URL}/api/v2", status=200, body=load_fixture("api.json"))
+    responses.get(f"{DEVICE_URL}/api/v2", status=200, body=load_fixture(fixture))
 
     api = await device.api()
 
-    assert api.api_version == "2.3.0"
+    assert api.api_version == version
     assert api.api_version >= "2.1.0"
-    assert api.endpoints["stream_url"] == f"{DEVICE_URL}/api/v2/device/stream"
+    assert api.endpoints["device_url"] == f"{DEVICE_URL}/api/v2/device"
+    assert ("stream_url" in api.endpoints) is streaming
 
 
 async def test_notification_updated(
@@ -385,3 +400,21 @@ async def test_notification_updated(
     notification = await device.notification(notification_id=25)
 
     assert notification.updated == datetime(2026, 9, 10, 17, 50, 38, tzinfo=UTC)
+
+
+async def test_notify_lifetime(responses: aioresponses, device: LaMetricDevice) -> None:
+    """Test the notification lifetime is sent under the key the device accepts."""
+    url = f"{DEVICE_URL}/api/v2/device/notifications"
+    responses.post(url, status=201, body=load_fixture("notification.json"))
+
+    await device.notify(
+        notification=Notification(
+            life_time=5000,
+            model=Model(frames=[Simple(text="Short lived")]),
+        )
+    )
+
+    request = request_json(responses, "POST", url)
+    assert request["lifetime"] == 5000
+    assert "life_time" not in request
+    assert "lifeTime" not in request

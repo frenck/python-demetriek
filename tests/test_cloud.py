@@ -146,7 +146,9 @@ async def test_no_json_response(responses: aioresponses, cloud: LaMetricCloud) -
 
 async def test_get_current_user(responses: aioresponses, cloud: LaMetricCloud) -> None:
     """Test getting current logged in user information."""
-    responses.get(f"{CLOUD_URL}/api/v2/me", status=200, body=load_fixture("me.json"))
+    responses.get(
+        f"{CLOUD_URL}/api/v2/users/me", status=200, body=load_fixture("me.json")
+    )
 
     user = await cloud.current_user()
 
@@ -174,6 +176,7 @@ async def test_get_devices(responses: aioresponses, cloud: LaMetricCloud) -> Non
     assert devices[0].device_id == 21
     assert devices[0].name == "Blackjack"
     assert devices[0].state == DeviceState.CONFIGURED
+    assert devices[0].product_code == "sa1"
     assert devices[0].serial_number == "SA140100002200W00B21"
     assert (
         devices[0].api_key
@@ -245,7 +248,8 @@ async def test_get_device(responses: aioresponses, cloud: LaMetricCloud) -> None
     assert device
     assert device.device_id == 42
     assert device.name == "The Answer"
-    assert device.state == DeviceState.CONFIGURED
+    assert device.state is None
+    assert device.product_code is None
     assert device.serial_number == "SA140100002200W00B42"
     assert (
         device.api_key

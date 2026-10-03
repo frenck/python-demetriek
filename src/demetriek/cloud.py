@@ -122,7 +122,7 @@ class LaMetricCloud:
             A User object, with information about the current user.
 
         """
-        response = await self._request("/api/v2/me")
+        response = await self._request("/api/v2/users/me")
         return User.from_dict(response)
 
     async def devices(self) -> list[CloudDevice]:

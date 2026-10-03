@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Self
 
 from .const import StreamContentEncoding
-from .exceptions import LaMetricError
+from .exceptions import LaMetricConnectionError, LaMetricError
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -27,6 +27,9 @@ MAX_DATAGRAM_SIZE = 65507
 
 # Positions, sizes, and data lengths are unsigned 16 bit fields.
 MAX_FIELD_VALUE = 0xFFFF
+
+# The number of areas in a packet is an unsigned 8 bit field.
+MAX_AREAS = 0xFF
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -60,12 +63,17 @@ def build_lmsp_packet(
 
     Raises:
     ------
-        ValueError: The areas do not fit in a single packet, or raw data
-            does not match the size of its area.
+        ValueError: The areas do not fit in a single packet, an area has a
+            position or size out of range, or raw data does not match
+            the size of its area.
 
     """
     if not areas:
         msg = "An LMSP packet needs at least one area"
+        raise ValueError(msg)
+
+    if len(areas) > MAX_AREAS:
+        msg = f"An LMSP packet holds at most {MAX_AREAS} areas, got {len(areas)}"
         raise ValueError(msg)
 
     # Multi byte values in LMSP are little endian.
@@ -75,6 +83,14 @@ def build_lmsp_packet(
     packet += struct.pack("<BBBB", encoding, 0, len(areas), 0)
 
     for area in areas:
+        fields = {"x": area.x, "y": area.y, "width": area.width, "height": area.height}
+        for name, value in fields.items():
+            if not 0 <= value <= MAX_FIELD_VALUE:
+                msg = (
+                    f"Area {name} must be between 0 and {MAX_FIELD_VALUE}, got {value}"
+                )
+                raise ValueError(msg)
+
         expected = area.width * area.height * RAW_BYTES_PER_PIXEL
         if encoding is StreamContentEncoding.RAW and len(area.data) != expected:
             msg = (
@@ -128,15 +144,26 @@ class LaMetricStream:
         self._transport: asyncio.DatagramTransport | None = None
 
     async def connect(self) -> None:
-        """Open the UDP socket to the device."""
+        """Open the UDP socket to the device.
+
+        Raises
+        ------
+            LaMetricConnectionError: The socket could not be opened, for
+                example because the host could not be resolved.
+
+        """
         if self._transport is not None:
             return
 
         loop = asyncio.get_running_loop()
-        self._transport, _ = await loop.create_datagram_endpoint(
-            asyncio.DatagramProtocol,
-            remote_addr=(self.host, self.session.port),
-        )
+        try:
+            self._transport, _ = await loop.create_datagram_endpoint(
+                asyncio.DatagramProtocol,
+                remote_addr=(self.host, self.session.port),
+            )
+        except OSError as exception:
+            msg = f"Could not open a stream to the LaMetric device at {self.host}"
+            raise LaMetricConnectionError(msg) from exception
 
     def send(self, frame: bytes, *, width: int, height: int) -> None:
         """Send a frame that covers the whole canvas.

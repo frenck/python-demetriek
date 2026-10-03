@@ -7,6 +7,7 @@ import pytest
 from aioresponses import aioresponses
 
 from demetriek import (
+    LaMetricConnectionError,
     LaMetricDevice,
     LaMetricError,
     LaMetricStream,
@@ -189,6 +190,22 @@ def test_build_lmsp_packet_encoded() -> None:
             [StreamArea(data=bytes(255 * 255 * 3), width=255, height=255)],
             "does not fit in one area",
         ),
+        (
+            [StreamArea(data=bytes(3), width=1, height=1)] * 256,
+            "at most 255 areas",
+        ),
+        (
+            [StreamArea(data=bytes(3), width=1, height=1, x=-1)],
+            "x must be between 0 and 65535, got -1",
+        ),
+        (
+            [StreamArea(data=bytes(3), width=1, height=1, y=65536)],
+            "y must be between 0 and 65535, got 65536",
+        ),
+        (
+            [StreamArea(data=b"", width=-1, height=0)],
+            "width must be between 0 and 65535, got -1",
+        ),
     ],
 )
 def test_build_lmsp_packet_invalid(areas: list[StreamArea], match: str) -> None:
@@ -237,6 +254,19 @@ async def test_stream_send() -> None:
             packet = await asyncio.wait_for(loop.sock_recv(receiver, 2048), 5)
 
     assert packet == DOCUMENTED_HEADER + frame
+
+
+async def test_stream_connect_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test a socket that cannot be opened raises a connection error."""
+
+    async def fail(*_args: object, **_kwargs: object) -> None:
+        raise socket.gaierror
+
+    monkeypatch.setattr(asyncio.get_running_loop(), "create_datagram_endpoint", fail)
+    stream = LaMetricStream(host="lametric.invalid", session=_session(9999))
+
+    with pytest.raises(LaMetricConnectionError, match=r"at lametric\.invalid"):
+        await stream.connect()
 
 
 async def test_stream_send_not_connected() -> None:

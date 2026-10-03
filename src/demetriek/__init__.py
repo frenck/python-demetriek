@@ -26,11 +26,13 @@ from .exceptions import (
     LaMetricConnectionTimeoutError,
     LaMetricError,
 )
+from .local_auth import LaMetricLocalAuth
 from .models import (
     API,
     App,
     AppParameter,
     Audio,
+    AuthChallenge,
     Bluetooth,
     BluetoothLowEnergy,
     Chart,
@@ -69,6 +71,7 @@ __all__ = [
     "App",
     "AppParameter",
     "Audio",
+    "AuthChallenge",
     "Bluetooth",
     "BluetoothLowEnergy",
     "BrightnessMode",
@@ -92,6 +95,7 @@ __all__ = [
     "LaMetricConnectionTimeoutError",
     "LaMetricDevice",
     "LaMetricError",
+    "LaMetricLocalAuth",
     "LaMetricStream",
     "Model",
     "Notification",

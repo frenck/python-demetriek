@@ -311,6 +311,8 @@ async def test_http_error401_message(
     [
         ('{"errors": [{"message": "Forbidden"}]}', "Forbidden"),
         ('{"errors": [{"message": "One"}, {"message": "Two"}]}', "One; Two"),
+        ('{"error": {"message": "Invalid auth"}}', "Invalid auth"),
+        ('{"error": "nonsense"}', None),
         ('{"errors": [{"code": 1}, "nonsense"]}', None),
         ('{"errors": "nonsense"}', None),
         ('{"errors": []}', None),

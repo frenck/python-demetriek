@@ -13,7 +13,7 @@ from aioresponses import aioresponses
 from aioresponses import core as aioresponses_core
 from yarl import URL
 
-from demetriek import LaMetricCloud, LaMetricDevice
+from demetriek import LaMetricCloud, LaMetricDevice, LaMetricLocalAuth
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
@@ -103,3 +103,10 @@ async def cloud() -> AsyncGenerator[LaMetricCloud, None]:
     """Yield a LaMetric cloud client on a shared session."""
     async with aiohttp.ClientSession() as session:
         yield LaMetricCloud(token="abc", session=session)  # noqa: S106
+
+
+@pytest.fixture
+async def auth() -> AsyncGenerator[LaMetricLocalAuth, None]:
+    """Yield a local auth client on a shared session."""
+    async with aiohttp.ClientSession() as session:
+        yield LaMetricLocalAuth(host="127.0.0.2", session=session)

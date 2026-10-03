@@ -124,6 +124,43 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+### API key from the device
+
+Devices from 2022 onward can hand out their API key locally, after someone
+presses the button on top of the device. No LaMetric account needed. An
+LM 37X8 TIME does not support this. This uses the web interface of the
+device, which LaMetric does not document.
+
+```python
+"""Asynchronous Python client for LaMetric TIME devices."""
+
+import asyncio
+
+from demetriek import LaMetricLocalAuth
+
+
+async def main():
+    """Get the API key of a LaMetric device with a press on its button."""
+    async with LaMetricLocalAuth("192.168.1.2") as auth:
+        challenge = await auth.request_challenge()
+        print(f"Press the button on your LaMetric within {challenge.duration}s")
+
+        while challenge.state == "in-progress":
+            await asyncio.sleep(1)
+            challenge = await auth.challenge(challenge_id=challenge.challenge_id)
+
+        if not challenge.resolved:
+            print("The button was not pressed in time")
+            return
+
+        api_key = await auth.api_key(challenge_id=challenge.challenge_id)
+        print(f"The API key is {api_key}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## Changelog & Releases
 
 This repository keeps a change log using [GitHub's releases][releases]

@@ -20,7 +20,7 @@ from tenacity import (
 )
 from yarl import URL
 
-from .const import ScreensaverMode
+from .const import ScreensaverMode, StreamFillType, StreamRenderMode
 from .exceptions import (
     LaMetricAuthenticationError,
     LaMetricConnectionError,
@@ -35,6 +35,9 @@ from .models import (
     Device,
     Display,
     Notification,
+    Stream,
+    StreamFadingPixels,
+    StreamSession,
     Wifi,
 )
 
@@ -586,6 +589,72 @@ class LaMetricDevice:
                     notification.get("id"),
                 )
         return notifications
+
+    async def stream(self) -> Stream:
+        """Get the stream state and canvas size of the device.
+
+        Streaming needs API 2.3.0 or newer, and is not available on every
+        device. `api()` lists the stream endpoints when the device has them.
+
+        Returns
+        -------
+            A Stream object, with the stream state and the canvas sizes.
+
+        """
+        response = await self._request("/api/v2/device/stream")
+        return Stream.from_dict(response)
+
+    async def stream_start(
+        self,
+        *,
+        fill_type: StreamFillType = StreamFillType.SCALE,
+        render_mode: StreamRenderMode = StreamRenderMode.PIXEL,
+        fading_pixels: StreamFadingPixels | None = None,
+    ) -> StreamSession:
+        """Start a stream, so the device accepts LMSP frames over UDP.
+
+        Args:
+        ----
+            fill_type: How to fill a screen that is larger than the canvas.
+            render_mode: Whether frames map onto square or triangular pixels.
+            fading_pixels: Settings for the fading pixels effect, which is
+                only applied when given.
+
+        Returns:
+        -------
+            A StreamSession object, with the session ID and the UDP port to
+            send frames to.
+
+        """
+        post_process: dict[str, Any] = {"type": "none"}
+        if fading_pixels is not None:
+            post_process = {
+                "type": "effect",
+                "params": {
+                    "effect_type": "fading_pixels",
+                    "effect_params": fading_pixels.to_dict(),
+                },
+            }
+
+        response = await self._request(
+            "/api/v2/device/stream/start",
+            method=hdrs.METH_PUT,
+            data={
+                "canvas": {
+                    "fill_type": fill_type,
+                    "render_mode": render_mode,
+                    "post_process": post_process,
+                }
+            },
+        )
+
+        # The canvas settings come back nested, flatten them into the session.
+        data = response["success"]["data"]
+        return StreamSession.from_dict({**data.pop("canvas"), **data})
+
+    async def stream_stop(self) -> None:
+        """Stop the stream, so the device returns to normal operation."""
+        await self._request("/api/v2/device/stream/stop", method=hdrs.METH_PUT)
 
     async def close(self) -> None:
         """Close open client session."""

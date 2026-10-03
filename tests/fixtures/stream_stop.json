@@ -1,0 +1,8 @@
+{
+  "success": {
+    "data": {
+      "status": "stopped"
+    },
+    "path": "/api/v2/device/stream/stop"
+  }
+}

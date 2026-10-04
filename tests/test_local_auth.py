@@ -253,3 +253,57 @@ async def test_internal_session(responses: aioresponses) -> None:
     assert challenge.resolved is True
     assert session is not None
     assert session.closed
+
+
+@pytest.mark.parametrize(
+    ("status", "supported"),
+    [
+        # A device from 2022 onward serves its web interface.
+        (200, True),
+        # An LM 37X8 TIME asks for credentials instead.
+        (401, False),
+    ],
+)
+async def test_supported(
+    responses: aioresponses,
+    auth: LaMetricLocalAuth,
+    status: int,
+    supported: bool,  # noqa: FBT001
+) -> None:
+    """Test checking support, without asking the device for a button press."""
+    responses.get(f"{WEB_URL}/", status=status, body="")
+
+    assert await auth.supported() is supported
+    assert ("POST", URL(REQUEST_URL)) not in responses.requests
+
+
+@pytest.mark.parametrize(
+    ("exception", "expected"),
+    [
+        (TimeoutError(), LaMetricConnectionTimeoutError),
+        (aiohttp.ClientError(), LaMetricConnectionError),
+    ],
+)
+async def test_supported_connection_errors(
+    responses: aioresponses,
+    auth: LaMetricLocalAuth,
+    exception: Exception,
+    expected: type[Exception],
+) -> None:
+    """Test connection problems while checking support raise connection errors."""
+    responses.get(f"{WEB_URL}/", exception=exception)
+
+    with pytest.raises(expected):
+        await auth.supported()
+
+
+async def test_supported_internal_session(responses: aioresponses) -> None:
+    """Test checking support creates and closes its own session."""
+    responses.get(f"{WEB_URL}/", status=200, body="")
+
+    async with LaMetricLocalAuth(host="127.0.0.2") as auth:
+        assert await auth.supported() is True
+        session = auth.session
+
+    assert session is not None
+    assert session.closed

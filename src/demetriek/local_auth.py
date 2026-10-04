@@ -154,6 +154,50 @@ class LaMetricLocalAuth:
             )
             raise LaMetricError(msg) from exception
 
+    async def supported(self) -> bool:
+        """Tell whether the device can hand out its API key with a button press.
+
+        This only checks for the web interface of the device, so unlike
+        `request_challenge()`, nothing shows on the screen of the device.
+
+        Returns
+        -------
+            True when the device has the web interface, like devices from 2022
+            onward. An LM 37X8 TIME asks for credentials instead.
+
+        Raises
+        ------
+            LaMetricConnectionError: An error occurred while communicating with
+                the LaMetric device.
+            LaMetricConnectionTimeoutError: A timeout occurred while communicating
+                with the LaMetric device.
+
+        """
+        url = URL.build(scheme="https", host=self.host, path="/")
+
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
+            self._close_session = True
+
+        try:
+            async with (
+                asyncio.timeout(self.request_timeout),
+                self.session.get(url, ssl=False) as response,
+            ):
+                return response.status == HTTPStatus.OK
+        except TimeoutError as exception:
+            msg = (
+                "Timeout occurred while connecting to the LaMetric device"
+                f" at {self.host}"
+            )
+            raise LaMetricConnectionTimeoutError(msg) from exception
+        except (aiohttp.ClientError, socket.gaierror) as exception:
+            msg = (
+                "Error occurred while communicating with the LaMetric device"
+                f" at {self.host}"
+            )
+            raise LaMetricConnectionError(msg) from exception
+
     async def request_challenge(self) -> AuthChallenge:
         """Ask the device to have its button pressed.
 

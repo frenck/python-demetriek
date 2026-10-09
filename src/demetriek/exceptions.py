@@ -21,6 +21,10 @@ class LaMetricConnectionTimeoutError(LaMetricConnectionError):
     """LaMetric connection Timeout exception."""
 
 
+class LaMetricUnsupportedError(LaMetricError):
+    """LaMetric device does not support what was asked of it."""
+
+
 def error_message(body: str) -> str | None:
     """Extract the error messages from an error response of the LaMetric API.
 

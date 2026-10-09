@@ -18,6 +18,7 @@ from .exceptions import (
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
+    LaMetricUnsupportedError,
     error_message,
 )
 from .models import AuthChallenge
@@ -210,8 +211,9 @@ class LaMetricLocalAuth:
 
         Raises
         ------
-            LaMetricError: The device does not support this, for example an
-                LM 37X8 TIME.
+            LaMetricUnsupportedError: The device does not support this, for
+                example an LM 37X8 TIME.
+            LaMetricError: Received an unexpected response from the device.
 
         """
         try:
@@ -226,7 +228,7 @@ class LaMetricLocalAuth:
                 f"The LaMetric device at {self.host} does not support getting"
                 " its API key with a press on its button"
             )
-            raise LaMetricError(msg) from exception
+            raise LaMetricUnsupportedError(msg) from exception
 
         challenge = response.get("challenge") if isinstance(response, dict) else None
         return self._parse_challenge(challenge)

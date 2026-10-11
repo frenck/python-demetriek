@@ -18,6 +18,7 @@ from demetriek import (
     LaMetricConnectionTimeoutError,
     LaMetricError,
     LaMetricLocalAuth,
+    LaMetricUnsupportedError,
 )
 
 from .conftest import load_fixture
@@ -60,10 +61,8 @@ async def test_request_challenge_not_supported(
         body='{"errors":[{"message":"Authorization is required"}]}',
     )
 
-    with pytest.raises(LaMetricError, match="does not support") as error:
+    with pytest.raises(LaMetricUnsupportedError, match="does not support"):
         await auth.request_challenge()
-
-    assert error.type is LaMetricError
 
 
 @pytest.mark.parametrize("body", ['{"nope": true}', "[]"])
@@ -73,8 +72,11 @@ async def test_request_challenge_unexpected_data(
     """Test an answer that is no challenge raises a LaMetricError."""
     responses.post(REQUEST_URL, status=200, body=body)
 
-    with pytest.raises(LaMetricError, match="does not understand"):
+    with pytest.raises(LaMetricError, match="does not understand") as error:
         await auth.request_challenge()
+
+    # Only a device without this flow is unsupported, not a broken answer.
+    assert error.type is LaMetricError
 
 
 @pytest.mark.parametrize(

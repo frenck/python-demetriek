@@ -25,6 +25,7 @@ from .exceptions import (
     LaMetricConnectionError,
     LaMetricConnectionTimeoutError,
     LaMetricError,
+    LaMetricUnsupportedError,
 )
 from .local_auth import LaMetricLocalAuth
 from .models import (
@@ -97,6 +98,7 @@ __all__ = [
     "LaMetricError",
     "LaMetricLocalAuth",
     "LaMetricStream",
+    "LaMetricUnsupportedError",
     "Model",
     "Notification",
     "NotificationIconType",
